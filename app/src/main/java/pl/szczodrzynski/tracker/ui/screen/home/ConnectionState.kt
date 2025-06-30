@@ -26,28 +26,37 @@ import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
-import pl.szczodrzynski.tracker.service.TrackerService
+import pl.szczodrzynski.tracker.service.ConnectionState
+import pl.szczodrzynski.tracker.service.ServiceState
+import pl.szczodrzynski.tracker.service.TrackerDevice
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 
 private class PreviewProvider :
-	PreviewParameterProvider<Pair<TrackerService.ServiceState, TrackerService.ConnectionState>> {
-	override val values = sequenceOf(
-		TrackerService.ServiceState.Disconnected to TrackerService.ConnectionState.NoBluetoothSupport,
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.NoBluetoothSupport,
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.NoPermissions,
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.BluetoothNotEnabled,
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.Disconnected(null),
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.Disconnected("SerialPort"),
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.Connecting("SerialPort"),
-		TrackerService.ServiceState.Connected to TrackerService.ConnectionState.Connected("SerialPort"),
-	)
+	PreviewParameterProvider<Pair<ServiceState, ConnectionState>> {
+	override val values by lazy {
+		val device = TrackerDevice(
+			"Device 1",
+			"",
+			TrackerDevice.State.BONDED
+		)
+		sequenceOf(
+			ServiceState.Disconnected to ConnectionState.NoBluetoothSupport,
+			ServiceState.Connected to ConnectionState.NoBluetoothSupport,
+			ServiceState.Connected to ConnectionState.NoPermissions,
+			ServiceState.Connected to ConnectionState.BluetoothNotEnabled,
+			ServiceState.Connected to ConnectionState.Disconnected(null),
+			ServiceState.Connected to ConnectionState.Disconnected(device),
+			ServiceState.Connected to ConnectionState.Connecting(device),
+			ServiceState.Connected to ConnectionState.Connected(device),
+		)
+	}
 }
 
 @Preview
 @Composable
 private fun PreviewServiceDisconnected(
 	@PreviewParameter(PreviewProvider::class)
-	states: Pair<TrackerService.ServiceState, TrackerService.ConnectionState>,
+	states: Pair<ServiceState, ConnectionState>,
 ) {
 	SportTrackPreview {
 		Column(
@@ -62,8 +71,8 @@ private fun PreviewServiceDisconnected(
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun ConnectionState(
-	serviceState: TrackerService.ServiceState,
-	connectionState: TrackerService.ConnectionState,
+	serviceState: ServiceState,
+	connectionState: ConnectionState,
 	onRequestPermission: () -> Unit = {},
 	onEnableBluetooth: () -> Unit = {},
 	onChooseDevice: () -> Unit = {},
@@ -82,26 +91,26 @@ fun ConnectionState(
 		style = MaterialTheme.typography.headlineSmall,
 	)
 
-	if (serviceState != TrackerService.ServiceState.Connected)
+	if (serviceState != ServiceState.Connected)
 		return
-	if (connectionState == TrackerService.ConnectionState.NoBluetoothSupport)
+	if (connectionState == ConnectionState.NoBluetoothSupport)
 		return
 
 	val deviceName = when (connectionState) {
-		is TrackerService.ConnectionState.Disconnected -> connectionState.deviceName
-		is TrackerService.ConnectionState.Connecting -> connectionState.deviceName
-		is TrackerService.ConnectionState.Connected -> connectionState.deviceName
+		is ConnectionState.Disconnected -> connectionState.device?.name
+		is ConnectionState.Connecting -> connectionState.device.name
+		is ConnectionState.Connected -> connectionState.device.name
 		else -> null
 	}
 
 	when (connectionState) {
-		is TrackerService.ConnectionState.Disconnected,
-		is TrackerService.ConnectionState.Connecting,
-		is TrackerService.ConnectionState.Connected,
+		is ConnectionState.Disconnected,
+		is ConnectionState.Connecting,
+		is ConnectionState.Connected,
 			-> {
 			DeviceChooser(
 				deviceName,
-				enabled = connectionState is TrackerService.ConnectionState.Disconnected,
+				enabled = connectionState is ConnectionState.Disconnected,
 				onChooseDevice = onChooseDevice,
 			)
 		}
@@ -111,16 +120,16 @@ fun ConnectionState(
 
 	val size = ButtonDefaults.MediumContainerHeight
 	val enabled =
-		connectionState !is TrackerService.ConnectionState.Connecting
-			&& (connectionState !is TrackerService.ConnectionState.Disconnected || deviceName != null)
+		connectionState !is ConnectionState.Connecting
+			&& (connectionState !is ConnectionState.Disconnected || deviceName != null)
 
 	Button(
 		onClick = {
 			when (connectionState) {
-				TrackerService.ConnectionState.NoPermissions -> onRequestPermission()
-				TrackerService.ConnectionState.BluetoothNotEnabled -> onEnableBluetooth()
-				is TrackerService.ConnectionState.Disconnected -> onConnect()
-				is TrackerService.ConnectionState.Connected -> onDisconnect()
+				ConnectionState.NoPermissions -> onRequestPermission()
+				ConnectionState.BluetoothNotEnabled -> onEnableBluetooth()
+				is ConnectionState.Disconnected -> onConnect()
+				is ConnectionState.Connected -> onDisconnect()
 				else -> {}
 			}
 		},
@@ -133,16 +142,16 @@ fun ConnectionState(
 	) {
 		val style = ButtonDefaults.textStyleFor(size)
 		when (connectionState) {
-			TrackerService.ConnectionState.NoPermissions -> {
+			ConnectionState.NoPermissions -> {
 				Text(stringResource(R.string.home_request_permission), style = style)
 			}
 
-			TrackerService.ConnectionState.BluetoothNotEnabled -> {
+			ConnectionState.BluetoothNotEnabled -> {
 				Text(stringResource(R.string.home_enable_bluetooth), style = style)
 			}
 
-			is TrackerService.ConnectionState.Disconnected,
-			is TrackerService.ConnectionState.Connecting,
+			is ConnectionState.Disconnected,
+			is ConnectionState.Connecting,
 				-> {
 				Image(
 					asset = CommunityMaterial.Icon.cmd_connection,
@@ -153,7 +162,7 @@ fun ConnectionState(
 				Text(stringResource(R.string.home_connect), style = style)
 			}
 
-			is TrackerService.ConnectionState.Connected -> {
+			is ConnectionState.Connected -> {
 				Image(
 					asset = CommunityMaterial.Icon.cmd_close,
 					modifier = Modifier.size(ButtonDefaults.iconSizeFor(size)),
@@ -163,36 +172,36 @@ fun ConnectionState(
 				Text(stringResource(R.string.home_disconnect), style = style)
 			}
 
-			is TrackerService.ConnectionState.Error -> {}
+			is ConnectionState.Error -> {}
 			else -> {}
 		}
 	}
 }
 
-private fun getIcon(serviceState: TrackerService.ServiceState, connectionState: TrackerService.ConnectionState): IIcon =
+private fun getIcon(serviceState: ServiceState, connectionState: ConnectionState): IIcon =
 	when (serviceState) {
-		TrackerService.ServiceState.Disconnected -> CommunityMaterial.Icon2.cmd_lan_disconnect
-		TrackerService.ServiceState.Connected -> when (connectionState) {
-			TrackerService.ConnectionState.NoBluetoothSupport -> CommunityMaterial.Icon.cmd_alert_outline
-			TrackerService.ConnectionState.NoPermissions -> CommunityMaterial.Icon3.cmd_security
-			TrackerService.ConnectionState.BluetoothNotEnabled -> CommunityMaterial.Icon.cmd_bluetooth_off
-			is TrackerService.ConnectionState.Disconnected -> CommunityMaterial.Icon.cmd_connection
-			is TrackerService.ConnectionState.Connecting -> CommunityMaterial.Icon.cmd_bluetooth_audio
-			is TrackerService.ConnectionState.Connected -> CommunityMaterial.Icon.cmd_bluetooth_connect
-			is TrackerService.ConnectionState.Error -> CommunityMaterial.Icon.cmd_alert_outline
+		ServiceState.Disconnected -> CommunityMaterial.Icon2.cmd_lan_disconnect
+		ServiceState.Connected -> when (connectionState) {
+			ConnectionState.NoBluetoothSupport -> CommunityMaterial.Icon.cmd_alert_outline
+			ConnectionState.NoPermissions -> CommunityMaterial.Icon3.cmd_security
+			ConnectionState.BluetoothNotEnabled -> CommunityMaterial.Icon.cmd_bluetooth_off
+			is ConnectionState.Disconnected -> CommunityMaterial.Icon.cmd_connection
+			is ConnectionState.Connecting -> CommunityMaterial.Icon.cmd_bluetooth_audio
+			is ConnectionState.Connected -> CommunityMaterial.Icon.cmd_bluetooth_connect
+			is ConnectionState.Error -> CommunityMaterial.Icon.cmd_alert_outline
 		}
 	}
 
-private fun getText(serviceState: TrackerService.ServiceState, connectionState: TrackerService.ConnectionState): Int =
+private fun getText(serviceState: ServiceState, connectionState: ConnectionState): Int =
 	when (serviceState) {
-		TrackerService.ServiceState.Disconnected -> R.string.service_disconnected
-		TrackerService.ServiceState.Connected -> when (connectionState) {
-			TrackerService.ConnectionState.NoBluetoothSupport -> R.string.connection_no_bluetooth_support
-			TrackerService.ConnectionState.NoPermissions -> R.string.connection_no_permissions
-			TrackerService.ConnectionState.BluetoothNotEnabled -> R.string.connection_bluetooth_not_enabled
-			is TrackerService.ConnectionState.Disconnected -> R.string.connection_disconnected
-			is TrackerService.ConnectionState.Connecting -> R.string.connection_connecting
-			is TrackerService.ConnectionState.Connected -> R.string.connection_connected
-			is TrackerService.ConnectionState.Error -> R.string.connection_error
+		ServiceState.Disconnected -> R.string.service_disconnected
+		ServiceState.Connected -> when (connectionState) {
+			ConnectionState.NoBluetoothSupport -> R.string.connection_no_bluetooth_support
+			ConnectionState.NoPermissions -> R.string.connection_no_permissions
+			ConnectionState.BluetoothNotEnabled -> R.string.connection_bluetooth_not_enabled
+			is ConnectionState.Disconnected -> R.string.connection_disconnected
+			is ConnectionState.Connecting -> R.string.connection_connecting
+			is ConnectionState.Connected -> R.string.connection_connected
+			is ConnectionState.Error -> R.string.connection_error
 		}
 	}

@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.szczodrzynski.tracker.service.ConnectionState
+import pl.szczodrzynski.tracker.service.ServiceState
 import pl.szczodrzynski.tracker.service.TrackerService
 import pl.szczodrzynski.tracker.ui.NavTarget
 import timber.log.Timber
@@ -34,15 +36,14 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 
 	var currentUser: FirebaseUser? by mutableStateOf(null)
 
-	private var serviceBinder: TrackerService.TrackerServiceBinder? = null
+	var binder: TrackerService.TrackerServiceBinder? = null
+		private set
 	private var serviceJob: Job? = null
 
-	private val _serviceState =
-		MutableStateFlow<TrackerService.ServiceState>(TrackerService.ServiceState.Disconnected)
+	private val _serviceState = MutableStateFlow<ServiceState>(ServiceState.Disconnected)
 	val serviceState = _serviceState.asStateFlow()
 
-	private val _connectionState =
-		MutableStateFlow<TrackerService.ConnectionState>(TrackerService.ConnectionState.NoBluetoothSupport)
+	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
 	val connectionState = _connectionState.asStateFlow()
 
 	init {
@@ -65,22 +66,18 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 
 	override fun onServiceConnected(className: ComponentName, service: IBinder) {
 		Timber.d("Service $className connected")
-		serviceBinder = service as? TrackerService.TrackerServiceBinder ?: return
+		binder = service as? TrackerService.TrackerServiceBinder ?: return
 		serviceJob = viewModelScope.launch {
-			_connectionState.emitAll(serviceBinder?.connectionState ?: return@launch)
+			_connectionState.emitAll(binder?.connectionState ?: return@launch)
 		}
-		_serviceState.update { TrackerService.ServiceState.Connected }
+		_serviceState.update { ServiceState.Connected }
 	}
 
 	override fun onServiceDisconnected(className: ComponentName) {
 		Timber.d("Service $className disconnected")
-		_serviceState.update { TrackerService.ServiceState.Disconnected }
+		_serviceState.update { ServiceState.Disconnected }
 		serviceJob?.cancel()
-		serviceBinder = null
-	}
-
-	fun updateServiceState() {
-		serviceBinder?.updateState()
+		binder = null
 	}
 }
 

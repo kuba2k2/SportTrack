@@ -28,10 +28,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.service.Utils.hasBluetoothPermissions
@@ -44,29 +44,14 @@ class TrackerService : Service(), CoroutineScope {
 
 	private var bluetoothManager: BluetoothManager? = null
 	private var bluetoothAdapter: BluetoothAdapter? = null
-	private val bluetoothDevices = mutableSetOf<BluetoothDevice>()
-	private var bluetoothDevice: BluetoothDevice? = null
+
+	private var trackerDevice: TrackerDevice? = null
 		set(value) {
 			prefs.edit {
 				putString("address", value?.address)
 			}
 			field = value
 		}
-
-	sealed interface ServiceState {
-		data object Disconnected : ServiceState
-		data object Connected : ServiceState
-	}
-
-	sealed interface ConnectionState {
-		data object NoBluetoothSupport : ConnectionState
-		data object NoPermissions : ConnectionState
-		data object BluetoothNotEnabled : ConnectionState
-		data class Disconnected(val deviceName: String?) : ConnectionState
-		data class Connecting(val deviceName: String) : ConnectionState
-		data class Connected(val deviceName: String) : ConnectionState
-		data class Error(val e: Exception?, val messageRes: Int? = null) : ConnectionState
-	}
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
 
@@ -152,13 +137,13 @@ class TrackerService : Service(), CoroutineScope {
 				!hasBluetoothPermissions() -> ConnectionState.NoPermissions
 				bluetoothAdapter?.isEnabled != true -> ConnectionState.BluetoothNotEnabled
 				else -> {
-					if (bluetoothDevice == null) {
+					if (trackerDevice == null) {
 						val address = prefs.getString("address", null)
-						bluetoothDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
+						trackerDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
 							it.address == address
-						}
+						}?.let(::TrackerDevice)
 					}
-					ConnectionState.Disconnected(bluetoothDevice?.name)
+					ConnectionState.Disconnected(trackerDevice)
 				}
 			}
 		}
@@ -169,7 +154,7 @@ class TrackerService : Service(), CoroutineScope {
 
 		fun updateState() = this@TrackerService.updateState()
 
-		fun getBluetoothDevices(scan: Boolean): Flow<BluetoothDevice> {
+		fun getBluetoothDevices(scan: Boolean): Flow<Set<TrackerDevice>> {
 			val adapter = bluetoothAdapter
 				?: return emptyFlow()
 			if (PermissionChecker.checkSelfPermission(
@@ -181,15 +166,15 @@ class TrackerService : Service(), CoroutineScope {
 			if (!adapter.isEnabled)
 				return emptyFlow()
 
-			if (!scan) {
-				bluetoothDevices.clear()
-				bluetoothDevices.addAll(adapter.bondedDevices)
-				return bluetoothDevices.asFlow()
-			}
+			val devices = adapter.bondedDevices.map(::TrackerDevice).toMutableSet()
+			if (!scan)
+				return flowOf(devices.toSet())
 
 			adapter.cancelDiscovery()
 
 			return callbackFlow {
+				trySend(devices.toSet())
+
 				val receiver = object : BroadcastReceiver() {
 					override fun onReceive(context: Context, intent: Intent) {
 						when (intent.action) {
@@ -199,8 +184,8 @@ class TrackerService : Service(), CoroutineScope {
 									BluetoothDevice.ACTION_FOUND,
 									BluetoothDevice::class.java
 								) ?: return
-								bluetoothDevices.add(device)
-								trySend(device)
+								devices.add(TrackerDevice(device))
+								trySend(devices.toSet())
 							}
 
 							BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
@@ -225,9 +210,9 @@ class TrackerService : Service(), CoroutineScope {
 			}
 		}
 
-		fun getBluetoothDevice() = bluetoothDevice
-		fun setBluetoothDevice(device: BluetoothDevice) {
-			bluetoothDevice = device
+		fun setTrackerDevice(device: TrackerDevice) {
+			trackerDevice = device
+			updateState()
 		}
 	}
 }

@@ -36,7 +36,7 @@ fun HomeScreen(
 
 	val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
 		if (result.isNotEmpty() && result.all { it.value }) {
-			mainVm.updateServiceState()
+			mainVm.binder?.updateState()
 		}
 	}
 
