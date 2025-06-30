@@ -33,9 +33,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor() : ViewModel(), OnCompleteListener<AuthResult> {
-	companion object {
-		private const val TAG = "LoginViewModel"
-	}
 
 	sealed interface State {
 		data object Idle : State

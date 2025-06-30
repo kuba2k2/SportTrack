@@ -1,55 +1,61 @@
 package pl.szczodrzynski.tracker.ui.screen.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import pl.szczodrzynski.tracker.R
-import pl.szczodrzynski.tracker.ui.NavTarget
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pl.szczodrzynski.tracker.service.Utils
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
-import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
+import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 
 @Preview
 @Composable
 private fun Preview() {
-	SportTrackTheme {
+	SportTrackPreview {
 		HomeScreen()
 	}
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+	vm: HomeViewModel = hiltViewModel(),
+) {
 	val mainVm = LocalMainViewModel.current
+	val serviceState by mainVm.serviceState.collectAsStateWithLifecycle()
+	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
+
+	val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+		if (result.isNotEmpty() && result.all { it.value }) {
+			mainVm.updateServiceState()
+		}
+	}
 
 	Column(
-		modifier = Modifier.padding(horizontal = 16.dp),
+		modifier = Modifier
+			.padding(horizontal = 16.dp)
+			.fillMaxSize(),
 		horizontalAlignment = Alignment.CenterHorizontally,
+		verticalArrangement = Arrangement.Center,
 	) {
-		Text(stringResource(R.string.app_name))
-		Text("User: ${mainVm.currentUser?.displayName}")
-		Button(
-			onClick = {
-				Firebase.auth.signOut()
+		ConnectionState(
+			serviceState, connectionState,
+			onRequestPermission = {
+				launcher.launch(Utils.getBluetoothPermissions().toTypedArray())
 			},
-			enabled = mainVm.currentUser != null,
-		) {
-			Text("Sign out")
-		}
-		Button(
-			onClick = {
-				mainVm.navigate(NavTarget.Login)
-			},
-			enabled = mainVm.currentUser == null,
-		) {
-			Text("Sign in")
-		}
+			onEnableBluetooth = {},
+			onChooseDevice = {},
+			onConnect = {},
+			onDisconnect = {},
+		)
 	}
 }

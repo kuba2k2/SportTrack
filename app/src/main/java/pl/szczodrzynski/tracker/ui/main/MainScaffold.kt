@@ -1,7 +1,6 @@
 package pl.szczodrzynski.tracker.ui.main
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -95,10 +94,10 @@ fun MainScaffold() {
 			navController,
 			startDestination = if (inspectionMode) NavTarget.Empty else mainVm.initialRoute,
 			modifier = Modifier
-				.padding(innerPadding)
+				.fillMaxSize()
 				.verticalScroll(scrollState)
-				.imePadding()
-				.fillMaxWidth(),
+				.padding(innerPadding)
+				.imePadding(),
 		) {
 			composable<NavTarget.Empty> {
 				Text(stringResource(R.string.app_name))

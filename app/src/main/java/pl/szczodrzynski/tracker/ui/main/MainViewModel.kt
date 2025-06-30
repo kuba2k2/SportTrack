@@ -78,6 +78,10 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 		serviceJob?.cancel()
 		serviceBinder = null
 	}
+
+	fun updateServiceState() {
+		serviceBinder?.updateState()
+	}
 }
 
 val LocalMainViewModel = staticCompositionLocalOf<MainViewModel> {

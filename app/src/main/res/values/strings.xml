@@ -25,4 +25,17 @@
 	<string name="login_error_user_collision">Konto z takim adresem e-mail już istnieje</string>
 	<string name="service_notification_title">Usługa SportTrack</string>
 	<string name="service_notification_text">Połączenie z urządzeniem jest uruchomione</string>
+	<string name="service_disconnected">Łączenie z usługą...</string>
+	<string name="connection_no_bluetooth_support">To urządzenie nie obsługuje Bluetooth</string>
+	<string name="connection_no_permissions">Wymagane uprawnienia</string>
+	<string name="connection_bluetooth_not_enabled">Bluetooth jest wyłączony</string>
+	<string name="connection_disconnected">Nie połączono</string>
+	<string name="connection_connecting">Łączenie...</string>
+	<string name="connection_connected">Połączono z urządzeniem</string>
+	<string name="connection_error">Błąd połączenia</string>
+	<string name="home_request_permission">Nadaj uprawnienia</string>
+	<string name="home_enable_bluetooth">Włącz Bluetooth</string>
+	<string name="home_connect">Połącz</string>
+	<string name="home_disconnect">Rozłącz</string>
+	<string name="home_choose_device">Wybierz urządzenie</string>
 </resources>

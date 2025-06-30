@@ -62,9 +62,9 @@ class TrackerService : Service(), CoroutineScope {
 		data object NoBluetoothSupport : ConnectionState
 		data object NoPermissions : ConnectionState
 		data object BluetoothNotEnabled : ConnectionState
-		data class Disconnected(val device: BluetoothDevice?) : ConnectionState
-		data class Connecting(val device: BluetoothDevice) : ConnectionState
-		data class Connected(val device: BluetoothDevice) : ConnectionState
+		data class Disconnected(val deviceName: String?) : ConnectionState
+		data class Connecting(val deviceName: String) : ConnectionState
+		data class Connected(val deviceName: String) : ConnectionState
 		data class Error(val e: Exception?, val messageRes: Int? = null) : ConnectionState
 	}
 
@@ -158,7 +158,7 @@ class TrackerService : Service(), CoroutineScope {
 							it.address == address
 						}
 					}
-					ConnectionState.Disconnected(bluetoothDevice)
+					ConnectionState.Disconnected(bluetoothDevice?.name)
 				}
 			}
 		}
@@ -166,6 +166,8 @@ class TrackerService : Service(), CoroutineScope {
 
 	inner class TrackerServiceBinder : Binder() {
 		val connectionState = _connectionState.asStateFlow()
+
+		fun updateState() = this@TrackerService.updateState()
 
 		fun getBluetoothDevices(scan: Boolean): Flow<BluetoothDevice> {
 			val adapter = bluetoothAdapter
