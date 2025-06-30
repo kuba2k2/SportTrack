@@ -23,4 +23,6 @@
 	<string name="login_error_invalid_user">Konto jest wyłączone lub zablokowane</string>
 	<string name="login_error_credential_manager">Błąd uwierzytelniania</string>
 	<string name="login_error_user_collision">Konto z takim adresem e-mail już istnieje</string>
+	<string name="service_notification_title">Usługa SportTrack</string>
+	<string name="service_notification_text">Połączenie z urządzeniem jest uruchomione</string>
 </resources>
