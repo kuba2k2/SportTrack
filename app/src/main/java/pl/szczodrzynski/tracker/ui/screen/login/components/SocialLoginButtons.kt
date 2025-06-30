@@ -9,7 +9,7 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -56,7 +56,7 @@ internal fun SocialLoginButtons(
 			Image(
 				CommunityMaterial.Icon2.cmd_google,
 				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
+				colorFilter = ColorFilter.tint(LocalContentColor.current),
 			)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_google_button))
@@ -72,7 +72,7 @@ internal fun SocialLoginButtons(
 			Image(
 				CommunityMaterial.Icon2.cmd_facebook,
 				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
+				colorFilter = ColorFilter.tint(LocalContentColor.current),
 			)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_facebook_button))

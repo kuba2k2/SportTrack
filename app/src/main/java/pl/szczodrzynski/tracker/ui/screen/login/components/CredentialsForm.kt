@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -60,7 +60,7 @@ internal fun CredentialsForm(
 			leadingIcon = {
 				Image(
 					CommunityMaterial.Icon.cmd_account_outline,
-					colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+					colorFilter = ColorFilter.tint(LocalContentColor.current)
 				)
 			},
 		)
@@ -74,7 +74,7 @@ internal fun CredentialsForm(
 		leadingIcon = {
 			Image(
 				CommunityMaterial.Icon.cmd_at,
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+				colorFilter = ColorFilter.tint(LocalContentColor.current)
 			)
 		},
 		supportingText = { if (error != null) Text(error) },
@@ -90,7 +90,7 @@ internal fun CredentialsForm(
 		leadingIcon = {
 			Image(
 				CommunityMaterial.Icon2.cmd_lock_outline,
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+				colorFilter = ColorFilter.tint(LocalContentColor.current)
 			)
 		},
 		trailingIcon = {
@@ -106,7 +106,7 @@ internal fun CredentialsForm(
 						stringResource(R.string.login_hide_password)
 					else
 						stringResource(R.string.login_show_password),
-					colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
+					colorFilter = ColorFilter.tint(LocalContentColor.current),
 				)
 			}
 		},

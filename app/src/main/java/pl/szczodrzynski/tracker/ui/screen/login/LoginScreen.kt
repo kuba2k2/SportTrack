@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -151,7 +152,7 @@ fun LoginScreen(
 			Image(
 				CommunityMaterial.Icon.cmd_account_plus_outline,
 				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
+				colorFilter = ColorFilter.tint(LocalContentColor.current),
 			)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_sign_up_button))
@@ -168,7 +169,7 @@ fun LoginScreen(
 			Image(
 				CommunityMaterial.Icon.cmd_account_off_outline,
 				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+				colorFilter = ColorFilter.tint(LocalContentColor.current),
 			)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_guest_button))
