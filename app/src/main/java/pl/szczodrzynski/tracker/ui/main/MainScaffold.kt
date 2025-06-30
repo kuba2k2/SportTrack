@@ -1,6 +1,7 @@
 package pl.szczodrzynski.tracker.ui.main
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -12,18 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,23 +34,24 @@ import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
-import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
 import timber.log.Timber
 
 @Composable
 @Preview
 private fun Preview() {
-	SportTrackTheme {
-		MainRoot(isPreview = true, mainVm = viewModel())
+	SportTrackPreview {
+		MainScaffold()
 	}
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainRoot(
-	isPreview: Boolean,
-	mainVm: MainViewModel,
-) {
+fun MainScaffold() {
+	val mainVm = LocalMainViewModel.current
+	val inspectionMode = LocalInspectionMode.current
 	val navController = rememberNavController()
+	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+	val scrollState = rememberScrollState()
 
 	LaunchedEffect(Unit) {
 		mainVm.nextRoute.collect {
@@ -61,22 +60,6 @@ fun MainRoot(
 			}
 		}
 	}
-
-	CompositionLocalProvider(LocalMainViewModel provides mainVm) {
-		Main(isPreview, mainVm, navController)
-	}
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Main(
-	isPreview: Boolean = false,
-	mainVm: MainViewModel,
-	navController: NavHostController,
-) {
-	val topAppBarState = rememberTopAppBarState()
-	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
-	val scrollState = rememberScrollState()
 
 	Scaffold(
 		modifier = Modifier
@@ -110,18 +93,19 @@ private fun Main(
 	) { innerPadding ->
 		NavHost(
 			navController,
-			startDestination = if (isPreview) NavTarget.Empty else mainVm.initialRoute,
+			startDestination = if (inspectionMode) NavTarget.Empty else mainVm.initialRoute,
 			modifier = Modifier
 				.padding(innerPadding)
 				.verticalScroll(scrollState)
-				.imePadding(),
+				.imePadding()
+				.fillMaxWidth(),
 		) {
 			composable<NavTarget.Empty> {
 				Text(stringResource(R.string.app_name))
 			}
 
 			// cannot reliably preview composables with a HiltViewModel
-			if (isPreview)
+			if (inspectionMode)
 				return@NavHost
 
 			composable<NavTarget.Login> {

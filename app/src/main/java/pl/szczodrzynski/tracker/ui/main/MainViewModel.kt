@@ -46,14 +46,17 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 	val connectionState = _connectionState.asStateFlow()
 
 	init {
-		val auth = Firebase.auth
-		currentUser = auth.currentUser
+		try {
+			val auth = Firebase.auth
+			currentUser = auth.currentUser
+			auth.addAuthStateListener {
+				currentUser = it.currentUser
+			}
+		} catch (e: IllegalStateException) {
+			// ignore FirebaseApp not initialized (likely in @Preview)
+		}
 		if (currentUser != null)
 			initialRoute = NavTarget.Home
-
-		auth.addAuthStateListener {
-			currentUser = it.currentUser
-		}
 	}
 
 	fun navigate(route: NavTarget) {
