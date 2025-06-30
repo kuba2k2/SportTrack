@@ -1,7 +1,6 @@
 package pl.szczodrzynski.tracker.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -43,6 +42,7 @@ import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -142,7 +142,7 @@ private fun Main(
 				return@NavHost
 
 			composable<NavTarget.Login> { it ->
-				Log.d("Main", it.toRoute<NavTarget.Login>().toString())
+				Timber.d(it.toRoute<NavTarget.Login>().toString())
 				LoginScreen(isRegister = false)
 			}
 

@@ -1,7 +1,6 @@
 package pl.szczodrzynski.tracker.ui.screen.login
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -29,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.szczodrzynski.tracker.R
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -123,7 +123,7 @@ class LoginViewModel @Inject constructor() : ViewModel(), OnCompleteListener<Aut
 	override fun onComplete(task: Task<AuthResult>) {
 		val user = auth.currentUser
 		if (!task.isSuccessful || user == null) {
-			Log.d(TAG, "Sign in failed: ${task.exception}")
+			Timber.d("Sign in failed: ${task.exception}")
 			_state.update { getError(task.exception) }
 			return
 		}
@@ -134,11 +134,11 @@ class LoginViewModel @Inject constructor() : ViewModel(), OnCompleteListener<Aut
 				.setDisplayName(nameState.text.toString())
 				.build()
 			user.updateProfile(request).addOnCompleteListener {
-				Log.d(TAG, "Sign in successful")
+				Timber.d("Sign in successful")
 				_state.update { State.Success(user) }
 			}
 		} else {
-			Log.d(TAG, "Sign in successful")
+			Timber.d("Sign in successful")
 			_state.update { State.Success(user) }
 		}
 	}

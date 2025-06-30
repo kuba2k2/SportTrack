@@ -60,6 +60,7 @@ dependencies {
 	implementation(libs.google.identity.googleid)
 	implementation(libs.iconics.compose)
 	implementation(libs.iconics.typeface.cmd)
+	implementation(libs.timber)
 	ksp(libs.hilt.android.compiler)
 	debugImplementation(libs.androidx.ui.tooling)
 }
