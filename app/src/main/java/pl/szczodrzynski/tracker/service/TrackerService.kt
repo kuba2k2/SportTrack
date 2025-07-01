@@ -1,6 +1,5 @@
 package pl.szczodrzynski.tracker.service
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -10,7 +9,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Binder
 import androidx.core.content.IntentCompat
-import androidx.core.content.PermissionChecker
 import androidx.core.content.edit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -93,19 +90,14 @@ class TrackerService : TrackerServiceBase() {
 		fun updateState() = this@TrackerService.updateState()
 
 		fun getBluetoothDevices(scan: Boolean): Flow<Set<TrackerDevice>> {
-			val adapter = bluetoothAdapter
-				?: return emptyFlow()
-			if (PermissionChecker.checkSelfPermission(
-					this@TrackerService,
-					Manifest.permission.BLUETOOTH_CONNECT
-				) != PermissionChecker.PERMISSION_GRANTED
-			) {
+			val adapter = bluetoothAdapter ?: return flowOf(setOf())
+			if (!hasBluetoothPermissions()) {
 				Timber.w("Bluetooth permission not granted")
-				return emptyFlow()
+				return flowOf(setOf())
 			}
 			if (!adapter.isEnabled) {
 				Timber.w("Bluetooth adapter not enabled")
-				return emptyFlow()
+				return flowOf(setOf())
 			}
 
 			val bondedDevices = adapter.bondedDevices.map(::TrackerDevice)
