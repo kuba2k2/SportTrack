@@ -12,6 +12,8 @@ import android.os.Binder
 import androidx.core.content.IntentCompat
 import androidx.core.content.PermissionChecker
 import androidx.core.content.edit
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +23,11 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import pl.szczodrzynski.tracker.service.Utils.hasBluetoothPermissions
 import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.service.data.TrackerCommand
+import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import timber.log.Timber
 import java.io.IOException
@@ -34,8 +39,10 @@ class TrackerService : TrackerServiceBase() {
 	}
 
 	private var trackerDevice: TrackerDevice? = null
+	private var trackerConnection: TrackerConnection? = null
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
+	private val _trackerConfig = MutableStateFlow(TrackerConfig())
 
 	override fun onBind(intent: Intent) = TrackerServiceBinder()
 
@@ -71,6 +78,7 @@ class TrackerService : TrackerServiceBase() {
 				foregroundStart()
 			else
 				foregroundStop()
+			Timber.d("Connection state: $state")
 			return@update state
 		}
 	}
@@ -80,6 +88,7 @@ class TrackerService : TrackerServiceBase() {
 		private val foundDevices = mutableSetOf<TrackerDevice>()
 
 		val connectionState = _connectionState.asStateFlow()
+		val trackerConfig = _trackerConfig.asStateFlow()
 
 		fun updateState() = this@TrackerService.updateState()
 
@@ -167,11 +176,12 @@ class TrackerService : TrackerServiceBase() {
 		}
 
 		fun connectDevice() = launch {
-			val device = trackerDevice?.bluetoothDevice ?: return@launch
+			val trackerDevice = trackerDevice ?: return@launch
+			val device = trackerDevice.bluetoothDevice ?: return@launch
 			bluetoothAdapter?.cancelDiscovery()
 
 			val socket = try {
-				Timber.e("Connecting to $device")
+				Timber.d("Connecting to $device")
 				val socket = device.createRfcommSocketToServiceRecord(SPP_UUID)!!
 				// store socket in service
 				bluetoothSocket = socket
@@ -191,13 +201,40 @@ class TrackerService : TrackerServiceBase() {
 			// connection is successful here
 			Timber.d("Connected successfully, socket = $socket")
 
+			// create a tracker connection and start it
+			trackerConnection = TrackerConnection(
+				device = trackerDevice,
+				socket = socket,
+				onConfigChanged = {
+					_trackerConfig.tryEmit(it)
+				},
+			)
+			trackerConnection?.start()?.invokeOnCompletion {
+				if (it == null || it is CancellationException)
+					disconnectDevice()
+				else
+					disconnectDevice(it)
+			}
+
+			try {
+				withTimeout(3000L) {
+					trackerConnection?.sendCommand(TrackerCommand.version())
+					trackerConnection?.sendCommand(TrackerCommand.temperature())
+				}
+			} catch (e: TimeoutCancellationException) {
+				Timber.e(e, "Configuration retrieval timeout")
+				disconnectDevice(e)
+			}
 		}
 
 		fun disconnectDevice(error: Throwable? = null) {
+			Timber.w("Disconnecting; error = $error")
+			trackerConnection?.stop()
+			trackerConnection = null
 			bluetoothAdapter?.cancelDiscovery()
 			bluetoothSocket?.close()
 			bluetoothSocket = null
-			bluetoothError = error
+			bluetoothError = error ?: bluetoothError
 			updateState()
 		}
 	}

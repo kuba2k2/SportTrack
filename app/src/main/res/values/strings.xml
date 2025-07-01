@@ -44,4 +44,6 @@
 	<string name="home_choose_device_search">Wyszukaj urządzenia</string>
 	<string name="home_choose_device_empty">Brak urządzeń</string>
 	<string name="home_connect_again">Spróbuj ponownie</string>
+	<string name="home_device_firmware">Wersja oprogramowania:\n%s\nTemperatura: %.01f°C</string>
+	<string name="home_device_checking">Pobieranie informacji...</string>
 </resources>
