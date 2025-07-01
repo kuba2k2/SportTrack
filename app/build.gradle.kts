@@ -30,6 +30,7 @@ android {
 		}
 	}
 	compileOptions {
+		isCoreLibraryDesugaringEnabled = true
 		sourceCompatibility = JavaVersion.VERSION_11
 		targetCompatibility = JavaVersion.VERSION_11
 	}
@@ -42,6 +43,7 @@ android {
 }
 
 dependencies {
+	coreLibraryDesugaring(libs.android.tools.desugar)
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)
@@ -63,6 +65,10 @@ dependencies {
 	implementation(libs.timber)
 	implementation(libs.coil.compose)
 	implementation(libs.coil.network.okhttp)
+	implementation(libs.androidx.room.runtime)
+	implementation(libs.androidx.room.ktx)
+	implementation(libs.androidx.room.paging)
+	ksp(libs.androidx.room.compiler)
 	ksp(libs.hilt.android.compiler)
 	debugImplementation(libs.androidx.ui.tooling)
 }

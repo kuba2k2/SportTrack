@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.os.Binder
 import androidx.core.content.IntentCompat
 import androidx.core.content.edit
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.service.Utils.hasBluetoothPermissions
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
@@ -29,11 +31,16 @@ import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import timber.log.Timber
 import java.io.IOException
 import java.util.UUID
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class TrackerService : TrackerServiceBase() {
 	companion object {
 		private val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 	}
+
+	@Inject
+	lateinit var appDb: AppDb
 
 	private var trackerDevice: TrackerDevice? = null
 	private var trackerConnection: TrackerConnection? = null
