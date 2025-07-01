@@ -30,6 +30,7 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
+import pl.szczodrzynski.tracker.ui.screen.login.components.AccountHeader
 import pl.szczodrzynski.tracker.ui.screen.login.components.AccountInfo
 import pl.szczodrzynski.tracker.ui.screen.login.components.CredentialsForm
 import pl.szczodrzynski.tracker.ui.screen.login.components.LogoHeader
@@ -40,7 +41,7 @@ import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
 @Composable
 private fun PreviewLogin() {
 	SportTrackTheme {
-		LoginScreen(isRegister = false)
+		LoginScreen()
 	}
 }
 
@@ -52,10 +53,19 @@ private fun PreviewRegister() {
 	}
 }
 
+@Preview
+@Composable
+private fun PreviewProfile() {
+	SportTrackTheme {
+		LoginScreen(isProfile = true)
+	}
+}
+
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun LoginScreen(
-	isRegister: Boolean,
+	isRegister: Boolean = false,
+	isProfile: Boolean = false,
 	vm: LoginViewModel = hiltViewModel(),
 ) {
 	val mainVm = LocalMainViewModel.current
@@ -63,22 +73,46 @@ fun LoginScreen(
 	val state by vm.state.collectAsStateWithLifecycle()
 
 	val enabled = state !is LoginViewModel.State.Loading
+	val user = (state as? LoginViewModel.State.Success)?.user
 
 	Column(
 		modifier = Modifier.padding(horizontal = 16.dp),
 		horizontalAlignment = Alignment.CenterHorizontally,
 	) {
-		LogoHeader(
-			modifier = Modifier
-				.padding(top = 72.dp, bottom = 24.dp)
-				.fillMaxWidth(),
-		)
+		val headerModifier = Modifier
+			.padding(top = 72.dp, bottom = 24.dp)
+			.fillMaxWidth()
+		if (isProfile && user != null)
+			AccountHeader(modifier = headerModifier)
+		else
+			LogoHeader(modifier = headerModifier)
 
-		if (state is LoginViewModel.State.Success) {
-			(state as? LoginViewModel.State.Success)?.user?.let {
-				AccountInfo(
-					name = it.displayName ?: "",
-					email = it.email ?: "",
+		if (user != null)
+			AccountInfo(
+				name = user.displayName ?: "",
+				email = user.email ?: "",
+			)
+
+		if (isProfile || user != null) {
+			Button(
+				onClick = {
+					when {
+						isProfile && user != null -> vm.performLogout()
+						isProfile -> mainVm.navigate(NavTarget.Login)
+						else -> mainVm.navigate(NavTarget.Home)
+					}
+				},
+				shapes = ButtonDefaults.shapes(),
+				modifier = Modifier.padding(top = 16.dp),
+			) {
+				Text(
+					stringResource(
+						when {
+							isProfile && user != null -> R.string.login_logout_button
+							isProfile -> R.string.login_title
+							else -> R.string.login_success_button
+						}
+					)
 				)
 			}
 			return@Column

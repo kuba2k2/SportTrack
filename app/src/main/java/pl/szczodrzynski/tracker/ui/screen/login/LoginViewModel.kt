@@ -117,6 +117,11 @@ class LoginViewModel @Inject constructor() : ViewModel(), OnCompleteListener<Aut
 		}
 	}
 
+	fun performLogout() {
+		auth.signOut()
+		_state.update { State.Idle }
+	}
+
 	override fun onComplete(task: Task<AuthResult>) {
 		val user = auth.currentUser
 		if (!task.isSuccessful || user == null) {

@@ -1,13 +1,19 @@
 package pl.szczodrzynski.tracker.ui.main
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -18,16 +24,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import coil3.compose.AsyncImage
 import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
@@ -52,8 +61,8 @@ private val navigationBarItems = listOf(
 	NavTarget.Profile,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 fun MainScaffold() {
 	val mainVm = LocalMainViewModel.current
 	val inspectionMode = LocalInspectionMode.current
@@ -92,6 +101,33 @@ fun MainScaffold() {
 						Image(
 							CommunityMaterial.Icon.cmd_arrow_left,
 							colorFilter = ColorFilter.tint(LocalContentColor.current),
+						)
+					}
+				},
+				actions = {
+					when (val photoUrl = mainVm.currentUser?.photoUrl) {
+						null -> FilledTonalIconButton(
+							onClick = {
+								mainVm.navigate(NavTarget.Profile)
+							},
+						) {
+							Image(
+								CommunityMaterial.Icon.cmd_account_circle_outline,
+								colorFilter = ColorFilter.tint(LocalContentColor.current),
+							)
+						}
+
+						else -> AsyncImage(
+							photoUrl.toString(),
+							contentDescription = mainVm.currentUser?.displayName,
+							contentScale = ContentScale.Crop,
+							modifier = Modifier
+								.padding(4.dp)
+								.size(IconButtonDefaults.smallContainerSize())
+								.clip(CircleShape)
+								.clickable {
+									mainVm.navigate(NavTarget.Profile)
+								},
 						)
 					}
 				},
@@ -140,8 +176,7 @@ fun MainScaffold() {
 				return@NavHost
 
 			composable<NavTarget.Login> {
-				Timber.d(it.toRoute<NavTarget.Login>().toString())
-				LoginScreen(isRegister = false)
+				LoginScreen()
 			}
 
 			composable<NavTarget.Register> {
@@ -161,7 +196,7 @@ fun MainScaffold() {
 			}
 
 			composable<NavTarget.Profile> {
-				Text(stringResource(R.string.profile_title))
+				LoginScreen(isProfile = true)
 			}
 		}
 	}

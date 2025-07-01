@@ -61,6 +61,8 @@ dependencies {
 	implementation(libs.iconics.compose)
 	implementation(libs.iconics.typeface.cmd)
 	implementation(libs.timber)
+	implementation(libs.coil.compose)
+	implementation(libs.coil.network.okhttp)
 	ksp(libs.hilt.android.compiler)
 	debugImplementation(libs.androidx.ui.tooling)
 }

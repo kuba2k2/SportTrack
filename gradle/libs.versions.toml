@@ -17,6 +17,7 @@ googleIdentity = "1.1.1"
 iconics = "5.4.0"
 iconicsTypefaceCmd = "7.0.96.1-kotlin"
 timber = "5.0.1"
+coil = "3.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,8 @@ google-identity-googleid = { group = "com.google.android.libraries.identity.goog
 iconics-compose = { group = "com.mikepenz", name = "iconics-compose", version.ref = "iconics" }
 iconics-typeface-cmd = { group = "com.mikepenz", name = "community-material-typeface", version.ref = "iconicsTypefaceCmd" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
