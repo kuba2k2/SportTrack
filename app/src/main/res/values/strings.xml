@@ -14,7 +14,7 @@
 	<string name="login_facebook_button">Facebook</string>
 	<string name="login_success_title">Zalogowano jako %s.</string>
 	<string name="login_success_button">Przejdź do aplikacji</string>
-	<string name="home_title">Strona główna</string>
+	<string name="home_title">Połączenie</string>
 	<string name="login_register_title_long">Utwórz nowe konto, używając adresu e-mail</string>
 	<string name="register_button">Utwórz konto</string>
 	<string name="login_register_title">Utwórz konto</string>
@@ -46,4 +46,7 @@
 	<string name="home_connect_again">Spróbuj ponownie</string>
 	<string name="home_device_firmware">Wersja oprogramowania:\n%s\nTemperatura: %.01f°C</string>
 	<string name="home_device_checking">Pobieranie informacji...</string>
+	<string name="training_title">Trening</string>
+	<string name="profile_title">Profil</string>
+	<string name="history_title">Historia</string>
 </resources>

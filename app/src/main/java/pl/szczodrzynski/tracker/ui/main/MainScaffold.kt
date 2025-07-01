@@ -8,7 +8,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,6 +45,13 @@ private fun Preview() {
 	}
 }
 
+private val navigationBarItems = listOf(
+	NavTarget.Home,
+	NavTarget.Training,
+	NavTarget.History,
+	NavTarget.Profile,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold() {
@@ -60,16 +69,16 @@ fun MainScaffold() {
 		}
 	}
 
+	val currentBackStackEntry by navController.currentBackStackEntryAsState()
+	val navTarget = currentBackStackEntry
+		?.let(NavTarget::deserialize)
+		?: mainVm.initialRoute
+
 	Scaffold(
 		modifier = Modifier
 			.fillMaxSize()
 			.nestedScroll(scrollBehavior.nestedScrollConnection),
 		topBar = {
-			val currentBackStackEntry by navController.currentBackStackEntryAsState()
-			val navTarget = currentBackStackEntry
-				?.let(NavTarget::deserialize)
-				?: mainVm.initialRoute
-
 			CenterAlignedTopAppBar(
 				title = {
 					Text(stringResource(navTarget.titleRes))
@@ -82,12 +91,35 @@ fun MainScaffold() {
 					}) {
 						Image(
 							CommunityMaterial.Icon.cmd_arrow_left,
-							colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+							colorFilter = ColorFilter.tint(LocalContentColor.current),
 						)
 					}
 				},
 				scrollBehavior = scrollBehavior,
 			)
+		},
+		bottomBar = {
+			if (navTarget !in navigationBarItems)
+				return@Scaffold
+			NavigationBar {
+				navigationBarItems.forEach { target ->
+					NavigationBarItem(
+						icon = {
+							Image(
+								target.icon,
+								colorFilter = ColorFilter.tint(LocalContentColor.current),
+							)
+						},
+						selected = navTarget == target,
+						onClick = {
+							mainVm.navigate(target)
+						},
+						label = {
+							Text(stringResource(target.titleRes))
+						},
+					)
+				}
+			}
 		},
 	) { innerPadding ->
 		NavHost(
@@ -118,6 +150,18 @@ fun MainScaffold() {
 
 			composable<NavTarget.Home> {
 				HomeScreen()
+			}
+
+			composable<NavTarget.Training> {
+				Text(stringResource(R.string.training_title))
+			}
+
+			composable<NavTarget.History> {
+				Text(stringResource(R.string.history_title))
+			}
+
+			composable<NavTarget.Profile> {
+				Text(stringResource(R.string.profile_title))
 			}
 		}
 	}

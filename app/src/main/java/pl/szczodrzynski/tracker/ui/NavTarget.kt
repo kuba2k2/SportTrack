@@ -23,7 +23,16 @@ sealed class NavTarget(
 	data object Register : NavTarget(R.string.login_register_title, CommunityMaterial.Icon.cmd_account_check_outline)
 
 	@Serializable
-	data object Home : NavTarget(R.string.home_title, CommunityMaterial.Icon2.cmd_home_outline)
+	data object Home : NavTarget(R.string.home_title, CommunityMaterial.Icon.cmd_connection)
+
+	@Serializable
+	data object Training : NavTarget(R.string.training_title, CommunityMaterial.Icon3.cmd_run)
+
+	@Serializable
+	data object History : NavTarget(R.string.history_title, CommunityMaterial.Icon.cmd_clipboard_text_clock_outline)
+
+	@Serializable
+	data object Profile : NavTarget(R.string.profile_title, CommunityMaterial.Icon.cmd_account_outline)
 
 	companion object {
 		fun deserialize(navBackStackEntry: NavBackStackEntry) = when (navBackStackEntry.destination.route) {
@@ -31,11 +40,17 @@ sealed class NavTarget(
 			Login::class.java.canonicalName -> navBackStackEntry.toRoute<Login>()
 			Register::class.java.canonicalName -> navBackStackEntry.toRoute<Register>()
 			Home::class.java.canonicalName -> navBackStackEntry.toRoute<Home>()
+			Training::class.java.canonicalName -> navBackStackEntry.toRoute<Training>()
+			History::class.java.canonicalName -> navBackStackEntry.toRoute<History>()
+			Profile::class.java.canonicalName -> navBackStackEntry.toRoute<Profile>()
 			else -> null
 		}
 
 		fun NavOptionsBuilder.setPopUpTo(navTarget: NavTarget) = when (navTarget) {
 			is Home -> popUpTo(0) { inclusive = true }
+			is Training -> popUpTo(Home) { inclusive = false }
+			is History -> popUpTo(Home) { inclusive = false }
+			is Profile -> popUpTo(Home) { inclusive = false }
 			else -> null
 		}
 	}
