@@ -31,6 +31,7 @@ abstract class TrackerServiceBase : Service(), CoroutineScope {
 	private var bluetoothManager: BluetoothManager? = null
 	protected var bluetoothAdapter: BluetoothAdapter? = null
 	protected var bluetoothSocket: BluetoothSocket? = null
+	protected var bluetoothException: Exception? = null
 
 	protected var isForeground = false
 		private set
@@ -66,7 +67,9 @@ abstract class TrackerServiceBase : Service(), CoroutineScope {
 		broadcastReceiver.unregister()
 	}
 
-	private fun foregroundStart() {
+	protected fun foregroundStart() {
+		if (isForeground)
+			return
 		val notification = NotificationCompat.Builder(this, "TrackerService")
 			.setContentTitle(getString(R.string.service_notification_title))
 			.setContentText(getString(R.string.service_notification_text))
@@ -85,7 +88,7 @@ abstract class TrackerServiceBase : Service(), CoroutineScope {
 		)
 	}
 
-	private fun foregroundStop() {
+	protected fun foregroundStop() {
 		isForeground = false
 		ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
 	}

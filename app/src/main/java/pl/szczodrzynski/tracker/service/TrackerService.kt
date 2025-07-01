@@ -35,10 +35,12 @@ class TrackerService : TrackerServiceBase() {
 
 	private var trackerDevice: TrackerDevice? = null
 		set(value) {
-			prefs.edit {
-				putString("address", value?.address)
-			}
 			field = value
+			if (value == null)
+				return
+			prefs.edit {
+				putString("address", value.address)
+			}
 		}
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
@@ -46,22 +48,41 @@ class TrackerService : TrackerServiceBase() {
 	override fun onBind(intent: Intent) = TrackerServiceBinder()
 
 	@SuppressLint("MissingPermission")
+	private fun setDevice() {
+		if (trackerDevice != null)
+			return
+		val address = prefs.getString("address", null)
+		trackerDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
+			it.address == address
+		}?.let(::TrackerDevice)
+	}
+
+	@SuppressLint("MissingPermission")
 	override fun updateState() {
 		_connectionState.update {
-			when {
+			val state = when {
 				bluetoothAdapter == null -> ConnectionState.NoBluetoothSupport
 				!hasBluetoothPermissions() -> ConnectionState.NoPermissions
 				bluetoothAdapter?.isEnabled != true -> ConnectionState.BluetoothNotEnabled
 				else -> {
-					if (trackerDevice == null) {
-						val address = prefs.getString("address", null)
-						trackerDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
-							it.address == address
-						}?.let(::TrackerDevice)
+					setDevice()
+					val device = trackerDevice
+					val socket = bluetoothSocket
+					val exception = bluetoothException
+					when {
+						device == null -> ConnectionState.Disconnected(null)
+						exception != null -> ConnectionState.Disconnected(device, exception)
+						socket == null -> ConnectionState.Disconnected(device)
+						!socket.isConnected -> ConnectionState.Connecting(device)
+						else -> ConnectionState.Connected(device)
 					}
-					ConnectionState.Disconnected(trackerDevice)
 				}
 			}
+			if (state is ConnectionState.Connecting || state is ConnectionState.Connected)
+				foregroundStart()
+			else
+				foregroundStop()
+			return@update state
 		}
 	}
 
@@ -145,7 +166,49 @@ class TrackerService : TrackerServiceBase() {
 		}
 
 		fun setTrackerDevice(device: TrackerDevice) {
+			// cannot change device if it's not in disconnected state
+			if (connectionState.value !is ConnectionState.Disconnected)
+				return
 			trackerDevice = device
+			bluetoothException = null
+			updateState()
+		}
+
+		fun connectDevice() = launch {
+			val device = trackerDevice?.bluetoothDevice ?: return@launch
+			bluetoothAdapter?.cancelDiscovery()
+
+			val socket = try {
+				Timber.e("Connecting to $device")
+				val socket = device.createRfcommSocketToServiceRecord(SPP_UUID)!!
+				// store socket in service
+				bluetoothSocket = socket
+				bluetoothException = null
+				updateState()
+				// connect to the socket
+				socket.connect()
+				socket
+			} catch (e: IOException) {
+				Timber.e(e, "Failed to create Bluetooth socket")
+				// set the last error
+				bluetoothException = e
+				// close and remove the failed socket
+				bluetoothSocket?.close()
+				bluetoothSocket = null
+				updateState()
+				return@launch
+			}
+
+			// connection is successful here
+			Timber.d("Connected successfully, socket = $socket")
+			updateState()
+		}
+
+		fun disconnectDevice() {
+			bluetoothAdapter?.cancelDiscovery()
+			bluetoothSocket?.close()
+			bluetoothSocket = null
+			bluetoothException = null
 			updateState()
 		}
 	}

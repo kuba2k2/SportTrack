@@ -79,8 +79,12 @@ fun HomeScreen(
 			onChooseDevice = {
 				deviceDialogOpen = true
 			},
-			onConnect = {},
-			onDisconnect = {},
+			onConnect = {
+				mainVm.binder?.connectDevice()
+			},
+			onDisconnect = {
+				mainVm.binder?.disconnectDevice()
+			},
 		)
 	}
 }

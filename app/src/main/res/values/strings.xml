@@ -43,4 +43,5 @@
 	<string name="home_choose_device_found">Znalezione urządzenia</string>
 	<string name="home_choose_device_search">Wyszukaj urządzenia</string>
 	<string name="home_choose_device_empty">Brak urządzeń</string>
+	<string name="home_connect_again">Spróbuj ponownie</string>
 </resources>

@@ -30,6 +30,7 @@ import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.ServiceState
 import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
+import java.io.IOException
 
 private class PreviewProvider :
 	PreviewParameterProvider<Pair<ServiceState, ConnectionState>> {
@@ -48,6 +49,7 @@ private class PreviewProvider :
 			ServiceState.Connected to ConnectionState.Disconnected(device),
 			ServiceState.Connected to ConnectionState.Connecting(device),
 			ServiceState.Connected to ConnectionState.Connected(device),
+			ServiceState.Connected to ConnectionState.Disconnected(device, IOException("connect failed")),
 		)
 	}
 }
@@ -159,7 +161,10 @@ fun ConnectionState(
 					colorFilter = ColorFilter.tint(LocalContentColor.current)
 				)
 				Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(size)))
-				Text(stringResource(R.string.home_connect), style = style)
+				if (connectionState is ConnectionState.Disconnected && connectionState.exception != null)
+					Text(stringResource(R.string.home_connect_again), style = style)
+				else
+					Text(stringResource(R.string.home_connect), style = style)
 			}
 
 			is ConnectionState.Connected -> {
@@ -172,7 +177,6 @@ fun ConnectionState(
 				Text(stringResource(R.string.home_disconnect), style = style)
 			}
 
-			is ConnectionState.Error -> {}
 			else -> {}
 		}
 	}
@@ -185,10 +189,13 @@ private fun getIcon(serviceState: ServiceState, connectionState: ConnectionState
 			ConnectionState.NoBluetoothSupport -> CommunityMaterial.Icon.cmd_alert_outline
 			ConnectionState.NoPermissions -> CommunityMaterial.Icon3.cmd_security
 			ConnectionState.BluetoothNotEnabled -> CommunityMaterial.Icon.cmd_bluetooth_off
-			is ConnectionState.Disconnected -> CommunityMaterial.Icon.cmd_connection
+			is ConnectionState.Disconnected -> if (connectionState.exception == null)
+				CommunityMaterial.Icon.cmd_connection
+			else
+				CommunityMaterial.Icon.cmd_alert_outline
+
 			is ConnectionState.Connecting -> CommunityMaterial.Icon.cmd_bluetooth_audio
 			is ConnectionState.Connected -> CommunityMaterial.Icon.cmd_bluetooth_connect
-			is ConnectionState.Error -> CommunityMaterial.Icon.cmd_alert_outline
 		}
 	}
 
@@ -199,9 +206,12 @@ private fun getText(serviceState: ServiceState, connectionState: ConnectionState
 			ConnectionState.NoBluetoothSupport -> R.string.connection_no_bluetooth_support
 			ConnectionState.NoPermissions -> R.string.connection_no_permissions
 			ConnectionState.BluetoothNotEnabled -> R.string.connection_bluetooth_not_enabled
-			is ConnectionState.Disconnected -> R.string.connection_disconnected
+			is ConnectionState.Disconnected -> if (connectionState.exception == null)
+				R.string.connection_disconnected
+			else
+				R.string.connection_error
+
 			is ConnectionState.Connecting -> R.string.connection_connecting
 			is ConnectionState.Connected -> R.string.connection_connected
-			is ConnectionState.Error -> R.string.connection_error
 		}
 	}
