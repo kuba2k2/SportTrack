@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
-import pl.szczodrzynski.tracker.data.entity.serializer.ZonedDateTimeSerializer
-import java.time.ZonedDateTime
+import pl.szczodrzynski.tracker.data.entity.serializer.InstantSerializer
+import java.time.Instant
 
 @Serializable
 @Entity(
@@ -17,8 +17,8 @@ data class TrainingWeather(
 	val id: Int = 0,
 	val trainingId: Int,
 
-	@Serializable(with = ZonedDateTimeSerializer::class)
-	val dateTime: ZonedDateTime?,
+	@Serializable(with = InstantSerializer::class)
+	val dateTime: Instant,
 
 	val weather: String?,
 	val precipitation: String?,

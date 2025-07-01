@@ -15,7 +15,7 @@ import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
-import pl.szczodrzynski.tracker.data.entity.serializer.ZonedDateTimeConverter
+import pl.szczodrzynski.tracker.data.entity.serializer.InstantConverter
 
 @Database(
 	entities = [
@@ -29,7 +29,7 @@ import pl.szczodrzynski.tracker.data.entity.serializer.ZonedDateTimeConverter
 	version = 1,
 )
 @TypeConverters(
-	ZonedDateTimeConverter::class,
+	InstantConverter::class,
 )
 abstract class AppDb : RoomDatabase() {
 
