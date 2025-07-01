@@ -46,7 +46,7 @@ fun HomeScreen(
 	val mainVm = LocalMainViewModel.current
 	val serviceState by mainVm.serviceState.collectAsStateWithLifecycle()
 	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
-	val trackerConfig by mainVm.trackerConfig.collectAsStateWithLifecycle()
+	val trackerConfig by vm.manager.trackerConfig.collectAsStateWithLifecycle()
 
 	val permissionLauncher = rememberLauncherForActivityResult(RequestMultiplePermissions()) {
 		mainVm.binder?.updateState()

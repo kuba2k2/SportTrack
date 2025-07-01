@@ -22,11 +22,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import pl.szczodrzynski.tracker.data.db.AppDb
+import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.Utils.hasBluetoothPermissions
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
-import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import timber.log.Timber
 import java.io.IOException
@@ -40,13 +39,10 @@ class TrackerService : TrackerServiceBase() {
 	}
 
 	@Inject
-	lateinit var appDb: AppDb
-
-	private var trackerDevice: TrackerDevice? = null
-	private var trackerConnection: TrackerConnection? = null
+	lateinit var manager: TrackerManager
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
-	private val _trackerConfig = MutableStateFlow(TrackerConfig())
+	private var trackerDevice: TrackerDevice? = null
 
 	override fun onBind(intent: Intent) = TrackerServiceBinder()
 
@@ -92,7 +88,6 @@ class TrackerService : TrackerServiceBase() {
 		private val foundDevices = mutableSetOf<TrackerDevice>()
 
 		val connectionState = _connectionState.asStateFlow()
-		val trackerConfig = _trackerConfig.asStateFlow()
 
 		fun updateState() = this@TrackerService.updateState()
 
@@ -200,25 +195,19 @@ class TrackerService : TrackerServiceBase() {
 			// connection is successful here
 			Timber.d("Connected successfully, socket = $socket")
 
-			// create a tracker connection and start it
-			trackerConnection = TrackerConnection(
-				device = trackerDevice,
-				socket = socket,
-				onConfigChanged = {
-					_trackerConfig.tryEmit(it)
-				},
-			)
-			trackerConnection?.start()?.invokeOnCompletion {
+			// start the tracker manager
+			manager.start(socket).invokeOnCompletion {
+				Timber.d("Manager connection job completed with result $it")
 				if (it == null || it is CancellationException)
-					disconnectDevice()
+					disconnectDevice(it?.cause)
 				else
 					disconnectDevice(it)
 			}
 
 			try {
 				withTimeout(3000L) {
-					trackerConnection?.sendCommand(TrackerCommand.version())
-					trackerConnection?.sendCommand(TrackerCommand.temperature())
+					manager.sendCommand(TrackerCommand.version())
+					manager.sendCommand(TrackerCommand.temperature())
 				}
 			} catch (e: TimeoutCancellationException) {
 				Timber.e(e, "Configuration retrieval timeout")
@@ -228,8 +217,7 @@ class TrackerService : TrackerServiceBase() {
 
 		fun disconnectDevice(error: Throwable? = null) {
 			Timber.w("Disconnecting; error = $error")
-			trackerConnection?.stop()
-			trackerConnection = null
+			manager.stop()
 			bluetoothAdapter?.cancelDiscovery()
 			bluetoothSocket?.close()
 			bluetoothSocket = null

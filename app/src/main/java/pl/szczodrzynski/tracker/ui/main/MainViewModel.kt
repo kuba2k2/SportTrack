@@ -14,8 +14,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +23,6 @@ import kotlinx.coroutines.launch
 import pl.szczodrzynski.tracker.service.TrackerService
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.ServiceState
-import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.ui.NavTarget
 import timber.log.Timber
 import javax.inject.Inject
@@ -48,9 +45,6 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
 	val connectionState = _connectionState.asStateFlow()
-
-	private val _trackerConfig = MutableStateFlow(TrackerConfig())
-	val trackerConfig = _trackerConfig.asStateFlow()
 
 	init {
 		try {
@@ -75,14 +69,7 @@ class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
 		binder = service as? TrackerService.TrackerServiceBinder ?: return
 		// create a job to forward state flows from Service to MainViewModel
 		serviceJob = viewModelScope.launch {
-			awaitAll(
-				async {
-					_connectionState.emitAll(binder?.connectionState ?: return@async)
-				},
-				async {
-					_trackerConfig.emitAll(binder?.trackerConfig ?: return@async)
-				},
-			)
+			_connectionState.emitAll(binder?.connectionState ?: return@launch)
 		}
 		_serviceState.update { ServiceState.Connected }
 	}
