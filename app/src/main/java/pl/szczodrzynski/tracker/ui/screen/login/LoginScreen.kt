@@ -3,6 +3,7 @@ package pl.szczodrzynski.tracker.ui.screen.login
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -94,6 +95,7 @@ fun LoginScreen(
 			)
 
 		if (isProfile || user != null) {
+			val size = ButtonDefaults.MediumContainerHeight
 			Button(
 				onClick = {
 					when {
@@ -102,9 +104,13 @@ fun LoginScreen(
 						else -> mainVm.navigate(NavTarget.Home)
 					}
 				},
-				shapes = ButtonDefaults.shapes(),
-				modifier = Modifier.padding(top = 16.dp),
+				shapes = ButtonDefaults.shapesFor(size),
+				modifier = Modifier
+					.padding(top = 16.dp)
+					.height(size),
+				contentPadding = ButtonDefaults.contentPaddingFor(size),
 			) {
+				val style = ButtonDefaults.textStyleFor(size)
 				Text(
 					stringResource(
 						when {
@@ -112,7 +118,8 @@ fun LoginScreen(
 							isProfile -> R.string.login_title
 							else -> R.string.login_success_button
 						}
-					)
+					),
+					style = style,
 				)
 			}
 			return@Column
