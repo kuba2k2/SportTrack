@@ -1,19 +1,26 @@
 package pl.szczodrzynski.tracker.ui.screen.home
 
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pl.szczodrzynski.tracker.service.ConnectionState
 import pl.szczodrzynski.tracker.service.Utils
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
@@ -34,10 +41,23 @@ fun HomeScreen(
 	val serviceState by mainVm.serviceState.collectAsStateWithLifecycle()
 	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
 
-	val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-		if (result.isNotEmpty() && result.all { it.value }) {
-			mainVm.binder?.updateState()
-		}
+	val permissionLauncher = rememberLauncherForActivityResult(RequestMultiplePermissions()) {
+		mainVm.binder?.updateState()
+	}
+	val bluetoothLauncher = rememberLauncherForActivityResult(StartActivityForResult()) {}
+
+	var deviceDialogOpen by remember { mutableStateOf(false) }
+
+	if (deviceDialogOpen && connectionState is ConnectionState.Disconnected) {
+		DeviceDialog(
+			onChooseDevice = {
+				mainVm.binder?.setTrackerDevice(it)
+				deviceDialogOpen = false
+			},
+			onDismiss = {
+				deviceDialogOpen = false
+			},
+		)
 	}
 
 	Column(
@@ -48,12 +68,17 @@ fun HomeScreen(
 		verticalArrangement = Arrangement.Center,
 	) {
 		ConnectionState(
-			serviceState, connectionState,
+			serviceState = serviceState,
+			connectionState = connectionState,
 			onRequestPermission = {
-				launcher.launch(Utils.getBluetoothPermissions().toTypedArray())
+				permissionLauncher.launch(Utils.getBluetoothPermissions().toTypedArray())
 			},
-			onEnableBluetooth = {},
-			onChooseDevice = {},
+			onEnableBluetooth = {
+				bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+			},
+			onChooseDevice = {
+				deviceDialogOpen = true
+			},
 			onConnect = {},
 			onDisconnect = {},
 		)

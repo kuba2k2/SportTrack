@@ -38,4 +38,9 @@
 	<string name="home_connect">Połącz</string>
 	<string name="home_disconnect">Rozłącz</string>
 	<string name="home_choose_device">Wybierz urządzenie</string>
+	<string name="home_choose_device_cancel">Anuluj</string>
+	<string name="home_choose_device_bonded">Powiązane urządzenia</string>
+	<string name="home_choose_device_found">Znalezione urządzenia</string>
+	<string name="home_choose_device_search">Wyszukaj urządzenia</string>
+	<string name="home_choose_device_empty">Brak urządzeń</string>
 </resources>

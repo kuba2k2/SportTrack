@@ -12,9 +12,6 @@ import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
@@ -30,12 +27,9 @@ fun DeviceChooser(
 	enabled: Boolean = true,
 	onChooseDevice: () -> Unit = {},
 ) {
-	var deviceDialogOpen by remember { mutableStateOf(false) }
-
 	if (deviceName == null) {
 		Button(
 			onClick = {
-				deviceDialogOpen = true
 				onChooseDevice()
 			},
 			shapes = ButtonDefaults.shapes(),
@@ -50,7 +44,6 @@ fun DeviceChooser(
 		leadingButton = {
 			SplitButtonDefaults.TonalLeadingButton(
 				onClick = {
-					deviceDialogOpen = true
 					onChooseDevice()
 				},
 				shapes = SplitButtonDefaults.leadingButtonShapesFor(SplitButtonDefaults.MediumContainerHeight),
@@ -67,16 +60,15 @@ fun DeviceChooser(
 		},
 		trailingButton = {
 			SplitButtonDefaults.TonalTrailingButton(
-				checked = deviceDialogOpen,
+				checked = false,
 				onCheckedChange = {
-					deviceDialogOpen = it
 					if (it)
 						onChooseDevice()
 				},
 				shapes = SplitButtonDefaults.trailingButtonShapesFor(SplitButtonDefaults.MediumContainerHeight),
 				enabled = enabled,
 			) {
-				val rotation: Float by animateFloatAsState(targetValue = if (deviceDialogOpen) 180f else 0f)
+				val rotation: Float by animateFloatAsState(targetValue = if (false) 180f else 0f)
 				Image(
 					asset = CommunityMaterial.Icon3.cmd_menu_down,
 					modifier = Modifier

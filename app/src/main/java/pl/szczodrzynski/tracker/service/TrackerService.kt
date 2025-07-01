@@ -150,6 +150,8 @@ class TrackerService : Service(), CoroutineScope {
 	}
 
 	inner class TrackerServiceBinder : Binder() {
+		private val foundDevices = mutableSetOf<TrackerDevice>()
+
 		val connectionState = _connectionState.asStateFlow()
 
 		fun updateState() = this@TrackerService.updateState()
@@ -161,49 +163,64 @@ class TrackerService : Service(), CoroutineScope {
 					this@TrackerService,
 					Manifest.permission.BLUETOOTH_CONNECT
 				) != PermissionChecker.PERMISSION_GRANTED
-			)
+			) {
+				Timber.w("Bluetooth permission not granted")
 				return emptyFlow()
-			if (!adapter.isEnabled)
+			}
+			if (!adapter.isEnabled) {
+				Timber.w("Bluetooth adapter not enabled")
 				return emptyFlow()
+			}
 
-			val devices = adapter.bondedDevices.map(::TrackerDevice).toMutableSet()
+			val boundedDevices = adapter.bondedDevices.map(::TrackerDevice)
 			if (!scan)
-				return flowOf(devices.toSet())
+				return flowOf((boundedDevices + foundDevices).toSet())
+			foundDevices.clear()
 
 			adapter.cancelDiscovery()
 
 			return callbackFlow {
-				trySend(devices.toSet())
+				trySend((boundedDevices + foundDevices).toSet())
 
 				val receiver = object : BroadcastReceiver() {
+					@SuppressLint("MissingPermission")
 					override fun onReceive(context: Context, intent: Intent) {
 						when (intent.action) {
 							BluetoothDevice.ACTION_FOUND -> {
 								val device = IntentCompat.getParcelableExtra(
 									intent,
-									BluetoothDevice.ACTION_FOUND,
+									BluetoothDevice.EXTRA_DEVICE,
 									BluetoothDevice::class.java
 								) ?: return
-								devices.add(TrackerDevice(device))
-								trySend(devices.toSet())
+								if (device.name == null)
+									return
+								Timber.d("Found device ${device.name} - ${device.address}")
+								val trackerDevice = TrackerDevice(device)
+								foundDevices.add(trackerDevice)
+								trySend((boundedDevices + foundDevices).toSet())
 							}
 
 							BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+								Timber.d("Discovery finished")
 								close()
 							}
 						}
 					}
 				}
 
+				Timber.d("Starting Bluetooth discovery")
 				val filter = IntentFilter().apply {
 					addAction(BluetoothDevice.ACTION_FOUND)
 					addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
 				}
 				registerReceiver(receiver, filter)
-				if (!adapter.startDiscovery())
+				if (!adapter.startDiscovery()) {
+					Timber.w("Discovery failed")
 					close()
+				}
 
 				awaitClose {
+					Timber.d("Flow is closing")
 					adapter.cancelDiscovery()
 					unregisterReceiver(receiver)
 				}
