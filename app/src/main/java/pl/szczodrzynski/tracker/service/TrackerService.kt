@@ -34,28 +34,10 @@ class TrackerService : TrackerServiceBase() {
 	}
 
 	private var trackerDevice: TrackerDevice? = null
-		set(value) {
-			field = value
-			if (value == null)
-				return
-			prefs.edit {
-				putString("address", value.address)
-			}
-		}
 
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
 
 	override fun onBind(intent: Intent) = TrackerServiceBinder()
-
-	@SuppressLint("MissingPermission")
-	private fun setDevice() {
-		if (trackerDevice != null)
-			return
-		val address = prefs.getString("address", null)
-		trackerDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
-			it.address == address
-		}?.let(::TrackerDevice)
-	}
 
 	@SuppressLint("MissingPermission")
 	override fun updateState() {
@@ -65,7 +47,14 @@ class TrackerService : TrackerServiceBase() {
 				!hasBluetoothPermissions() -> ConnectionState.NoPermissions
 				bluetoothAdapter?.isEnabled != true -> ConnectionState.BluetoothNotEnabled
 				else -> {
-					setDevice()
+					// devices are available now, load trackerDevice from shared prefs
+					if (trackerDevice == null) {
+						val address = prefs.getString("address", null)
+						trackerDevice = bluetoothAdapter?.bondedDevices?.firstOrNull {
+							it.address == address
+						}?.let(::TrackerDevice)
+					}
+
 					val device = trackerDevice
 					val socket = bluetoothSocket
 					val exception = bluetoothException
@@ -169,6 +158,9 @@ class TrackerService : TrackerServiceBase() {
 			// cannot change device if it's not in disconnected state
 			if (connectionState.value !is ConnectionState.Disconnected)
 				return
+			prefs.edit {
+				putString("address", device.address)
+			}
 			trackerDevice = device
 			bluetoothException = null
 			updateState()
