@@ -18,19 +18,17 @@ data class TrainingWeather(
 	val trainingId: Int,
 
 	@Serializable(with = InstantSerializer::class)
-	val dateTime: Instant,
+	val dateTime: Instant = Instant.now(),
 
-	val weather: String?,
-	val precipitation: String?,
+	val weather: String? = null,
+	val precipitation: String? = null,
 
-	val localTemperature: Float?,
-	val temperature: Float?,
-	val humidity: Int?,
-	val windDirection: String?,
-	val windSpeed: Int?,
-	val pressure: Int?,
-
-	val realFeelTemperature: Float?,
-	val realFeelTemperatureShade: Float?,
+	val localTemperature: Float? = null,
+	val temperature: Float? = null,
+	val apparentTemperature: Float? = null,
+	val humidity: Int? = null,
+	val windDirection: String? = null,
+	val windSpeed: Int? = null,
+	val pressure: Int? = null,
 )
 

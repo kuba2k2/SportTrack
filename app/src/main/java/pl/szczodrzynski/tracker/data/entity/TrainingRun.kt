@@ -18,12 +18,12 @@ data class TrainingRun(
 	val trainingId: Int,
 
 	@Serializable(with = InstantSerializer::class)
-	val dateTime: Instant,
+	val dateTime: Instant = Instant.now(),
 
 	val title: String,
-	val description: String?,
+	val description: String? = null,
 
 	val totalDistance: Int,
 	val isFlyingTest: Boolean,
-	val athleteId: Int?,
+	val athleteId: Int? = null,
 )

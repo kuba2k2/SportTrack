@@ -18,7 +18,7 @@ data class TrainingComment(
 	val trainingId: Int,
 
 	@Serializable(with = InstantSerializer::class)
-	val dateTime: Instant,
+	val dateTime: Instant = Instant.now(),
 
 	val comment: String,
 )

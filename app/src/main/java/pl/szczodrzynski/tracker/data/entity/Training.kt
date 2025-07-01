@@ -17,12 +17,12 @@ data class Training(
 	val id: Int = 0,
 
 	@Serializable(with = InstantSerializer::class)
-	val dateTime: Instant,
+	val dateTime: Instant = Instant.now(),
 
 	val title: String,
-	val description: String?,
+	val description: String? = null,
 
-	val locationName: String?,
-	val locationLat: Double?,
-	val locationLon: Double?,
+	val locationName: String? = null,
+	val locationLat: Double? = null,
+	val locationLon: Double? = null,
 )
