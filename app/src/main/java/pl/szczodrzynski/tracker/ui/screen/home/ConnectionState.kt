@@ -98,6 +98,14 @@ fun ConnectionState(
 	if (connectionState == ConnectionState.NoBluetoothSupport)
 		return
 
+	if (connectionState is ConnectionState.Disconnected && connectionState.error != null) {
+		Text(
+			text = connectionState.error.toString(),
+			modifier = Modifier.padding(bottom = 8.dp),
+			textAlign = TextAlign.Center,
+		)
+	}
+
 	val deviceName = when (connectionState) {
 		is ConnectionState.Disconnected -> connectionState.device?.name
 		is ConnectionState.Connecting -> connectionState.device.name
@@ -161,7 +169,7 @@ fun ConnectionState(
 					colorFilter = ColorFilter.tint(LocalContentColor.current)
 				)
 				Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(size)))
-				if (connectionState is ConnectionState.Disconnected && connectionState.exception != null)
+				if (connectionState is ConnectionState.Disconnected && connectionState.error != null)
 					Text(stringResource(R.string.home_connect_again), style = style)
 				else
 					Text(stringResource(R.string.home_connect), style = style)
@@ -189,7 +197,7 @@ private fun getIcon(serviceState: ServiceState, connectionState: ConnectionState
 			ConnectionState.NoBluetoothSupport -> CommunityMaterial.Icon.cmd_alert_outline
 			ConnectionState.NoPermissions -> CommunityMaterial.Icon3.cmd_security
 			ConnectionState.BluetoothNotEnabled -> CommunityMaterial.Icon.cmd_bluetooth_off
-			is ConnectionState.Disconnected -> if (connectionState.exception == null)
+			is ConnectionState.Disconnected -> if (connectionState.error == null)
 				CommunityMaterial.Icon.cmd_connection
 			else
 				CommunityMaterial.Icon.cmd_alert_outline
@@ -206,7 +214,7 @@ private fun getText(serviceState: ServiceState, connectionState: ConnectionState
 			ConnectionState.NoBluetoothSupport -> R.string.connection_no_bluetooth_support
 			ConnectionState.NoPermissions -> R.string.connection_no_permissions
 			ConnectionState.BluetoothNotEnabled -> R.string.connection_bluetooth_not_enabled
-			is ConnectionState.Disconnected -> if (connectionState.exception == null)
+			is ConnectionState.Disconnected -> if (connectionState.error == null)
 				R.string.connection_disconnected
 			else
 				R.string.connection_error

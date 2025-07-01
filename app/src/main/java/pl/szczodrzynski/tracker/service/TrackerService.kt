@@ -57,7 +57,7 @@ class TrackerService : TrackerServiceBase() {
 
 					val device = trackerDevice
 					val socket = bluetoothSocket
-					val exception = bluetoothException
+					val exception = bluetoothError
 					when {
 						device == null -> ConnectionState.Disconnected(null)
 						exception != null -> ConnectionState.Disconnected(device, exception)
@@ -162,7 +162,7 @@ class TrackerService : TrackerServiceBase() {
 				putString("address", device.address)
 			}
 			trackerDevice = device
-			bluetoothException = null
+			bluetoothError = null
 			updateState()
 		}
 
@@ -175,32 +175,29 @@ class TrackerService : TrackerServiceBase() {
 				val socket = device.createRfcommSocketToServiceRecord(SPP_UUID)!!
 				// store socket in service
 				bluetoothSocket = socket
-				bluetoothException = null
+				bluetoothError = null
 				updateState()
 				// connect to the socket
 				socket.connect()
+				updateState()
 				socket
 			} catch (e: IOException) {
 				Timber.e(e, "Failed to create Bluetooth socket")
-				// set the last error
-				bluetoothException = e
-				// close and remove the failed socket
-				bluetoothSocket?.close()
-				bluetoothSocket = null
-				updateState()
+				// disconnect on failure
+				disconnectDevice(e)
 				return@launch
 			}
 
 			// connection is successful here
 			Timber.d("Connected successfully, socket = $socket")
-			updateState()
+
 		}
 
-		fun disconnectDevice() {
+		fun disconnectDevice(error: Throwable? = null) {
 			bluetoothAdapter?.cancelDiscovery()
 			bluetoothSocket?.close()
 			bluetoothSocket = null
-			bluetoothException = null
+			bluetoothError = error
 			updateState()
 		}
 	}

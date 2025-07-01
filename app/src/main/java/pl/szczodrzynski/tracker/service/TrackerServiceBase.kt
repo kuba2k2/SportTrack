@@ -31,7 +31,7 @@ abstract class TrackerServiceBase : Service(), CoroutineScope {
 	private var bluetoothManager: BluetoothManager? = null
 	protected var bluetoothAdapter: BluetoothAdapter? = null
 	protected var bluetoothSocket: BluetoothSocket? = null
-	protected var bluetoothException: Exception? = null
+	protected var bluetoothError: Throwable? = null
 
 	protected var isForeground = false
 		private set
