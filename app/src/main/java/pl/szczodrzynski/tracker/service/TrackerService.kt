@@ -89,15 +89,15 @@ class TrackerService : TrackerServiceBase() {
 				return emptyFlow()
 			}
 
-			val boundedDevices = adapter.bondedDevices.map(::TrackerDevice)
+			val bondedDevices = adapter.bondedDevices.map(::TrackerDevice)
 			if (!scan)
-				return flowOf((boundedDevices + foundDevices).toSet())
+				return flowOf((bondedDevices + foundDevices).distinctBy { it.address }.toSet())
 			foundDevices.clear()
 
 			adapter.cancelDiscovery()
 
 			return callbackFlow {
-				trySend((boundedDevices + foundDevices).toSet())
+				trySend((bondedDevices + foundDevices).distinctBy { it.address }.toSet())
 
 				val receiver = object : BroadcastReceiver() {
 					@SuppressLint("MissingPermission")
@@ -114,7 +114,7 @@ class TrackerService : TrackerServiceBase() {
 								Timber.d("Found device ${device.name} - ${device.address}")
 								val trackerDevice = TrackerDevice(device)
 								foundDevices.add(trackerDevice)
-								trySend((boundedDevices + foundDevices).toSet())
+								trySend((bondedDevices + foundDevices).distinctBy { it.address }.toSet())
 							}
 
 							BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
