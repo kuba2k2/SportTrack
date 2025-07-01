@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.szczodrzynski.tracker.service.ConnectionState
-import pl.szczodrzynski.tracker.service.ServiceState
 import pl.szczodrzynski.tracker.service.TrackerService
+import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.service.data.ServiceState
 import pl.szczodrzynski.tracker.ui.NavTarget
 import timber.log.Timber
 import javax.inject.Inject

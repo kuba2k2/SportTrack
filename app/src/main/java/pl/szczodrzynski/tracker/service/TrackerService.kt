@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.szczodrzynski.tracker.service.Utils.hasBluetoothPermissions
+import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import timber.log.Timber
 import java.io.IOException
 import java.util.UUID

@@ -37,7 +37,7 @@ import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import kotlinx.coroutines.flow.onCompletion
 import pl.szczodrzynski.tracker.R
-import pl.szczodrzynski.tracker.service.TrackerDevice
+import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import timber.log.Timber

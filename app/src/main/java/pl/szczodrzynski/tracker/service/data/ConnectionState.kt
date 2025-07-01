@@ -1,4 +1,4 @@
-package pl.szczodrzynski.tracker.service
+package pl.szczodrzynski.tracker.service.data
 
 sealed interface ConnectionState {
 	data object NoBluetoothSupport : ConnectionState

@@ -26,9 +26,9 @@ import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
-import pl.szczodrzynski.tracker.service.ConnectionState
-import pl.szczodrzynski.tracker.service.ServiceState
-import pl.szczodrzynski.tracker.service.TrackerDevice
+import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.service.data.ServiceState
+import pl.szczodrzynski.tracker.service.data.TrackerDevice
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 
 private class PreviewProvider :

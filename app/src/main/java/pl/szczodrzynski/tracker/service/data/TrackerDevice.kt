@@ -1,4 +1,4 @@
-package pl.szczodrzynski.tracker.service
+package pl.szczodrzynski.tracker.service.data
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
