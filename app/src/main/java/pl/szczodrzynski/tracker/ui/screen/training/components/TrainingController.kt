@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -18,6 +21,8 @@ import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
@@ -35,6 +41,7 @@ import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
+import java.util.Locale
 
 @Preview
 @Composable
@@ -202,7 +209,7 @@ private fun ConfigBarItems(
 	) {
 		DropdownMenuItem(
 			text = {
-				Text(stringResource(R.string.training_config_delay_ready, trackerConfig.delayReady))
+				Text(stringResource(R.string.training_config_delay_ready, trackerConfig.delayReady / 1000))
 			},
 			onClick = {
 				settingsMenuOpened = false
@@ -257,4 +264,85 @@ private fun ConfigBarItems(
 			},
 		)
 	}
+
+	if (delayReadyDialogShown || delayStartMinDialogShown || delayStartMaxDialogShown) {
+		val command = when {
+			delayReadyDialogShown -> TrackerCommand.Type.DELAY_READY
+			delayStartMinDialogShown -> TrackerCommand.Type.DELAY_START_MIN
+			else -> TrackerCommand.Type.DELAY_START_MAX
+		}
+		val delayMs = when {
+			delayReadyDialogShown -> trackerConfig.delayReady
+			delayStartMinDialogShown -> trackerConfig.delayStartMin
+			else -> trackerConfig.delayStartMax
+		}
+		DelayConfigDialog(
+			command = command,
+			delayMs = delayMs,
+			onDismiss = {
+				delayReadyDialogShown = false
+				delayStartMinDialogShown = false
+				delayStartMaxDialogShown = false
+			},
+			onUpdate = { newDelayMs ->
+				onConfigCommand(TrackerCommand(command, newDelayMs.toString()))
+			},
+		)
+	}
+}
+
+@Composable
+private fun DelayConfigDialog(
+	command: TrackerCommand.Type,
+	delayMs: Int,
+	onDismiss: () -> Unit,
+	onUpdate: (newDelayMs: Int) -> Unit,
+) {
+	val initialDelay = delayMs / 1000.0f
+	val initialValue = String.format(Locale.getDefault(), "%.1f", initialDelay)
+	val regex = Regex("""^\d{0,4}([.,]\d?)?$""")
+
+	val state = rememberTextFieldState(initialValue)
+
+	AlertDialog(
+		onDismissRequest = onDismiss,
+		confirmButton = {
+			TextButton(
+				onClick = {
+					val newDelay = state.text.toString()
+						.replace(',', '.')
+						.toFloatOrNull() ?: initialDelay
+					onUpdate((newDelay * 1000.0).toInt())
+					onDismiss()
+				}
+			) {
+				Text(stringResource(R.string.training_config_save))
+			}
+		},
+		dismissButton = {
+			TextButton(onClick = onDismiss) {
+				Text(stringResource(R.string.training_config_cancel))
+			}
+		},
+		title = {
+			Text(stringResource(R.string.training_config_delay_dialog_title))
+		},
+		text = {
+			when (command) {
+				TrackerCommand.Type.DELAY_READY -> Text(stringResource(R.string.training_config_delay_ready_text))
+				TrackerCommand.Type.DELAY_START_MIN -> Text(stringResource(R.string.training_config_delay_start_min_text))
+				TrackerCommand.Type.DELAY_START_MAX -> Text(stringResource(R.string.training_config_delay_start_max_text))
+				else -> return@AlertDialog
+			}
+
+			TextField(
+				state = state,
+				inputTransformation = {
+					if (!this.toString().matches(regex))
+						revertAllChanges()
+				},
+				keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+			)
+		},
+	)
 }

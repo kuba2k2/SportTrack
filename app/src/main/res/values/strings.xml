@@ -67,4 +67,10 @@
 	<string name="training_config_sensor_beep_on">Dźwięk czujników - wł.</string>
 	<string name="training_config_sensor_beep_off">Dźwięk czujników - wył.</string>
 	<string name="training_not_connected">Brak połączenia</string>
+	<string name="training_config_delay_dialog_title">Ustaw czas</string>
+	<string name="training_config_delay_ready_text">Ustaw czas \'na miejsca - gotów\'</string>
+	<string name="training_config_delay_start_min_text">Ustaw minimalny czas \'start\'</string>
+	<string name="training_config_delay_start_max_text">Ustaw maksymalny czas \'start\'</string>
+	<string name="training_config_save">Zapisz</string>
+	<string name="training_config_cancel">Anuluj</string>
 </resources>
