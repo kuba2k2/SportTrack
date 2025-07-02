@@ -41,14 +41,14 @@ class TrainingViewModel @Inject constructor(
 	private lateinit var training: TrainingFull
 	private val metadataManager = TrainingMetadataManager()
 
-	fun loadTraining(id: Int) = viewModelScope.launch {
+	fun loadTraining(id: Int, isHistory: Boolean) = viewModelScope.launch {
 		if (state.value !is State.Loading)
 			return@launch
 		_state.update { State.Loading }
 		appDb.trainingDao.getOneFull(id).collect { training ->
 			training ?: return@collect
 			this@TrainingViewModel.training = training
-			if (training.training.id == manager.training.value?.id)
+			if (!isHistory && training.training.id == manager.training.value?.id)
 				_state.update { State.InProgress(training) }
 			else
 				_state.update { State.Finished(training) }

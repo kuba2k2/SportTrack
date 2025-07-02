@@ -15,6 +15,6 @@ fun TrainingLoading(
 
 	val training by vm.manager.training.collectAsStateWithLifecycle()
 	LaunchedEffect(trainingId) {
-		vm.loadTraining(trainingId ?: training?.id ?: 0)
+		vm.loadTraining(trainingId ?: training?.id ?: 0, isHistory = trainingId != null)
 	}
 }

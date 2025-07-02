@@ -74,4 +74,6 @@
 	<string name="training_config_save">Zapisz</string>
 	<string name="training_config_cancel">Anuluj</string>
 	<string name="history_title_long">Historia treningów</string>
+	<string name="history_no_location">Brak lokalizacji</string>
+	<string name="history_no_description">Brak opisu</string>
 </resources>
