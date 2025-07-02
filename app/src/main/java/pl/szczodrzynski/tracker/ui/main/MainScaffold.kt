@@ -45,6 +45,7 @@ import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
+import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
 
 @Composable
 @Preview
@@ -191,7 +192,7 @@ fun MainScaffold() {
 			}
 
 			composable<NavTarget.Training> {
-				Text(stringResource(R.string.training_title))
+				TrainingScreen()
 			}
 
 			composable<NavTarget.History> {
