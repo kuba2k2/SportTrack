@@ -24,6 +24,8 @@ data class TrainingRun(
 	val description: String? = null,
 
 	val totalDistance: Int,
+	val sensorDistance: List<Int>,
 	val isFlyingTest: Boolean,
 	val athleteId: Int? = null,
+	val isFinished: Boolean = false,
 )

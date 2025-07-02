@@ -16,6 +16,7 @@ import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
 import pl.szczodrzynski.tracker.data.entity.serializer.InstantConverter
+import pl.szczodrzynski.tracker.data.entity.serializer.ListConverter
 
 @Database(
 	entities = [
@@ -30,6 +31,7 @@ import pl.szczodrzynski.tracker.data.entity.serializer.InstantConverter
 )
 @TypeConverters(
 	InstantConverter::class,
+	ListConverter::class,
 )
 abstract class AppDb : RoomDatabase() {
 
