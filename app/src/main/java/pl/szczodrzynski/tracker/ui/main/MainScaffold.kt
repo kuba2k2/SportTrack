@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -41,6 +39,7 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.components.Iconics
+import pl.szczodrzynski.tracker.ui.components.navTypeMap
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
@@ -53,10 +52,10 @@ private fun Preview() {
 	}
 }
 
-private val navigationBarItems = listOf(
+private val navigationBarItems: List<NavTarget> = listOf(
 	NavTarget.Home,
 	NavTarget.Training,
-	NavTarget.History,
+	NavTarget.History(trainingId = null),
 	NavTarget.Profile,
 )
 
@@ -67,7 +66,6 @@ fun MainScaffold() {
 	val inspectionMode = LocalInspectionMode.current
 	val navController = rememberNavController()
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-	val scrollState = rememberScrollState()
 
 	LaunchedEffect(Unit) {
 		mainVm.nextRoute.collect {
@@ -130,12 +128,12 @@ fun MainScaffold() {
 			)
 		},
 		bottomBar = {
-			if (navTarget !in navigationBarItems)
+			if (!navTarget.inNavBar)
 				return@Scaffold
 			NavigationBar {
 				navigationBarItems.forEach { target ->
 					NavigationBarItem(
-						selected = navTarget == target,
+						selected = navTarget::class.java == target::class.java,
 						onClick = {
 							mainVm.navigate(target)
 						},
@@ -156,7 +154,6 @@ fun MainScaffold() {
 			startDestination = if (inspectionMode) NavTarget.Empty else mainVm.initialRoute,
 			modifier = Modifier
 				.fillMaxSize()
-				.verticalScroll(scrollState)
 				.padding(innerPadding)
 				.imePadding(),
 		) {

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -58,6 +60,7 @@ fun HomeScreen(
 	vm: HomeViewModel = hiltViewModel(),
 ) {
 	val mainVm = LocalMainViewModel.current
+	val scrollState = rememberScrollState()
 	val serviceState by mainVm.serviceState.collectAsStateWithLifecycle()
 	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
 
@@ -85,6 +88,7 @@ fun HomeScreen(
 
 	Column(
 		modifier = Modifier
+			.verticalScroll(scrollState)
 			.padding(horizontal = 16.dp)
 			.fillMaxSize(),
 		horizontalAlignment = Alignment.CenterHorizontally,

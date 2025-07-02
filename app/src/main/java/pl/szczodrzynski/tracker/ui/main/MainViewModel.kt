@@ -64,6 +64,7 @@ class MainViewModel @Inject constructor(
 	}
 
 	fun navigate(route: NavTarget) {
+		Timber.d("Navigating to $route")
 		nextRoute.tryEmit(route)
 	}
 
