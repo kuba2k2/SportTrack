@@ -56,10 +56,10 @@ class TrackerManager @Inject constructor(
 	var isStarted = false
 		private set
 
-	var totalDistance = 10000
-	var sensorDistance = listOf(10, 10, 10)
-	var finishTimeout = 20000
-	var athlete: Athlete? = null
+	var totalDistance = MutableStateFlow(10000)
+	var sensorDistance = MutableStateFlow(listOf(10, 10, 10))
+	var finishTimeout = MutableStateFlow(20000)
+	var athlete = MutableStateFlow<Athlete?>(null)
 
 	fun saveResult(result: TrackerResult) = launch {
 		Timber.d("Received result: $result")
@@ -80,10 +80,10 @@ class TrackerManager @Inject constructor(
 			val newRun = TrainingRun(
 				trainingId = training.id,
 				title = "",
-				totalDistance = totalDistance,
-				sensorDistance = sensorDistance,
+				totalDistance = totalDistance.value,
+				sensorDistance = sensorDistance.value,
 				isFlyingTest = result.mode == TrackerConfig.Mode.FLYING_START,
-				athleteId = athlete?.id,
+				athleteId = athlete.value?.id,
 				isFinished = false,
 			)
 			Timber.d("Creating run: $newRun")
@@ -96,7 +96,7 @@ class TrackerManager @Inject constructor(
 
 		// insert the split if available already
 		val runId = trainingRun?.id
-		if (result.millis != null && runId != null) {
+		if (result.type == TrackerResult.Type.SPLIT && result.millis != null && runId != null) {
 			val split = TrainingRunSplit(
 				trainingRunId = runId,
 				timestamp = result.millis,
@@ -107,9 +107,9 @@ class TrackerManager @Inject constructor(
 		}
 
 		// set a timeout if at least one split is already saved
-		if (trainingRunHasSplits) {
+		if (trainingRunHasSplits && finishTimeout.value != 0) {
 			trainingRunTimeout = launch(Dispatchers.IO) {
-				delay(finishTimeout.toLong())
+				delay(finishTimeout.value.toLong())
 				Timber.d("Finishing run $trainingRun")
 				finishRun()
 			}

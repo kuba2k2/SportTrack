@@ -110,6 +110,7 @@ fun TrainingScreen(
 			TrainingController(
 				isConnected = connectionState is ConnectionState.Connected,
 				trackerConfig = trackerConfig,
+				finishTimeoutFlow = vm.manager.finishTimeout,
 				onConnectClick = {
 					mainVm.navigate(NavTarget.Home)
 				},

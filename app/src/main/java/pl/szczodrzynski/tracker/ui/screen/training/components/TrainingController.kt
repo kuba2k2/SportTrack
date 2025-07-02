@@ -36,7 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.service.data.TrackerConfig
@@ -70,6 +73,7 @@ private fun PreviewDisconnected() {
 fun ColumnScope.TrainingController(
 	isConnected: Boolean = true,
 	trackerConfig: TrackerConfig = TrackerConfig(),
+	finishTimeoutFlow: MutableStateFlow<Int> = MutableStateFlow(0),
 	onConnectClick: () -> Unit = {},
 	onCommand: (command: TrackerCommand) -> Unit = {},
 ) {
@@ -92,7 +96,7 @@ fun ColumnScope.TrainingController(
 				FloatingToolbarDefaults.standardFloatingToolbarColors(),
 			content = {
 				if (isConnected)
-					ConfigBarItems(trackerConfig, onCommand)
+					ConfigBarItems(trackerConfig, finishTimeoutFlow, onCommand)
 				else
 					Text(
 						stringResource(R.string.training_not_connected),
@@ -130,6 +134,7 @@ fun ColumnScope.TrainingController(
 @Composable
 private fun ConfigBarItems(
 	trackerConfig: TrackerConfig,
+	finishTimeoutFlow: MutableStateFlow<Int>,
 	onConfigCommand: (command: TrackerCommand) -> Unit,
 ) {
 	val buttonModifier = Modifier.width(64.dp)
@@ -139,6 +144,7 @@ private fun ConfigBarItems(
 	var delayReadyDialogShown by remember { mutableStateOf(false) }
 	var delayStartMinDialogShown by remember { mutableStateOf(false) }
 	var delayStartMaxDialogShown by remember { mutableStateOf(false) }
+	val finishTimeout by finishTimeoutFlow.collectAsStateWithLifecycle()
 
 	val modes = listOf(
 		Triple(
@@ -265,6 +271,30 @@ private fun ConfigBarItems(
 					when (trackerConfig.sensorBeep) {
 						true -> CommunityMaterial.Icon3.cmd_volume_high
 						false -> CommunityMaterial.Icon3.cmd_volume_off
+					}
+				)
+			},
+		)
+		DropdownMenuItem(
+			text = {
+				when (finishTimeout) {
+					0 -> Text(stringResource(R.string.training_config_auto_finish_off))
+					else -> Text(stringResource(R.string.training_config_auto_finish, finishTimeout / 1000))
+				}
+			},
+			onClick = {
+				finishTimeoutFlow.update {
+					when (finishTimeout) {
+						0 -> 20000
+						else -> 0
+					}
+				}
+			},
+			leadingIcon = {
+				Iconics(
+					when (finishTimeout) {
+						0 -> CommunityMaterial.Icon2.cmd_flag_off_outline
+						else -> CommunityMaterial.Icon2.cmd_flag_checkered
 					}
 				)
 			},
