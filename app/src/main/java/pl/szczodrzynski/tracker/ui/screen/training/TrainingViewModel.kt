@@ -15,6 +15,7 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
+import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataManager
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

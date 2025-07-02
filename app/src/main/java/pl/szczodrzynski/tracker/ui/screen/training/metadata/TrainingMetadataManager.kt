@@ -1,4 +1,4 @@
-package pl.szczodrzynski.tracker.ui.screen.training
+package pl.szczodrzynski.tracker.ui.screen.training.metadata
 
 import android.Manifest
 import android.annotation.SuppressLint
