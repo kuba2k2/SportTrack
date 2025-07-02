@@ -16,6 +16,7 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
+import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataManager
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -128,5 +129,9 @@ class TrainingViewModel @Inject constructor(
 		}
 		delay(1000L)
 		onProgress(false)
+	}
+
+	fun sendCommand(command: TrackerCommand) = viewModelScope.launch {
+		manager.sendCommand(command)
 	}
 }

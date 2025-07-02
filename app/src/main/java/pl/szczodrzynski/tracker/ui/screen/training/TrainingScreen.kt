@@ -1,5 +1,6 @@
 package pl.szczodrzynski.tracker.ui.screen.training
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.ui.NavTarget
+import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
+import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingController
 import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingMap
 import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataUpdater
 
@@ -32,7 +37,10 @@ private fun Preview() {
 fun TrainingScreen(
 	vm: TrainingViewModel = hiltViewModel(),
 ) {
+	val mainVm = LocalMainViewModel.current
 	val state by vm.state.collectAsStateWithLifecycle()
+	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
+	val trackerConfig by vm.manager.trackerConfig.collectAsStateWithLifecycle()
 
 	val trainingFull = when (val localState = state) {
 		is TrainingViewModel.State.Loading -> {
@@ -76,5 +84,19 @@ fun TrainingScreen(
 		)
 
 		Text("Training: $training")
+	}
+
+	if (state is TrainingViewModel.State.InProgress) {
+		Box(modifier = Modifier.fillMaxSize()) {
+			TrainingController(
+				isConnected = connectionState is ConnectionState.Connected,
+				trackerConfig = trackerConfig,
+				onConnectClick = {
+					mainVm.navigate(NavTarget.Home)
+				},
+				onConfigCommand = vm::sendCommand,
+				onStartClick = {},
+			)
+		}
 	}
 }

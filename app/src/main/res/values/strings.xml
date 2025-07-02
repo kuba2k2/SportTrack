@@ -58,4 +58,13 @@
 	<string name="training_default_title">Trening o %s</string>
 	<string name="training_located_title">Trening w %s</string>
 	<string name="training_no_location">Brak lokalizacji</string>
+	<string name="training_config_start_on_signal">Start na sygnał</string>
+	<string name="training_config_flying_start">Start lotny</string>
+	<string name="training_config_reaction_test">Test czasu reakcji</string>
+	<string name="training_config_delay_ready">Czas \'na miejsca - gotów\' - %d s</string>
+	<string name="training_config_delay_start_min">Czas \'start\' (min) - %.1f s</string>
+	<string name="training_config_delay_start_max">Czas \'start\' (max) - %.1f s</string>
+	<string name="training_config_sensor_beep_on">Dźwięk czujników - wł.</string>
+	<string name="training_config_sensor_beep_off">Dźwięk czujników - wył.</string>
+	<string name="training_not_connected">Brak połączenia</string>
 </resources>
