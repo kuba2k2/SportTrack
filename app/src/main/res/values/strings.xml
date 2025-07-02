@@ -76,4 +76,5 @@
 	<string name="history_title_long">Historia treningów</string>
 	<string name="history_no_location">Brak lokalizacji</string>
 	<string name="history_no_description">Brak opisu</string>
+	<string name="training_sensor_error">Błąd czujnika</string>
 </resources>

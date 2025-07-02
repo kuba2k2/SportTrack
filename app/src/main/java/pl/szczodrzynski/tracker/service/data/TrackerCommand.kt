@@ -10,6 +10,7 @@ data class TrackerCommand(
 		// runtime values
 		VERSION(';'),
 		TEMPERATURE('*'),
+		ERROR('E'),
 
 		// configuration values
 		MODE('@'),

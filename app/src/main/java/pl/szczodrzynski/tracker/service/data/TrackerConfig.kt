@@ -3,6 +3,7 @@ package pl.szczodrzynski.tracker.service.data
 data class TrackerConfig(
 	val version: String? = null,
 	val temperature: Float? = null,
+	val error: Boolean = false,
 	val mode: Mode = Mode.START_ON_SIGNAL,
 	val delayReady: Int = 15000,
 	val delayStartMin: Int = 1500,
@@ -19,6 +20,7 @@ data class TrackerConfig(
 	fun update(type: TrackerCommand.Type, value: String): TrackerConfig = when (type) {
 		TrackerCommand.Type.VERSION -> copy(version = value)
 		TrackerCommand.Type.TEMPERATURE -> copy(temperature = value.toFloat())
+		TrackerCommand.Type.ERROR -> copy(error = value == "1")
 		TrackerCommand.Type.MODE -> copy(mode = Mode.entries.first { it.value.toString() == value })
 		TrackerCommand.Type.DELAY_READY -> copy(delayReady = value.toInt())
 		TrackerCommand.Type.DELAY_START_MIN -> copy(delayStartMin = value.toInt())

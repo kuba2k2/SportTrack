@@ -1,7 +1,8 @@
 package pl.szczodrzynski.tracker.ui.screen.training.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.ui.components.Iconics
+import pl.szczodrzynski.tracker.ui.components.SensorErrorSnackbar
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import java.util.Locale
 
@@ -47,7 +49,7 @@ import java.util.Locale
 @Composable
 private fun Preview() {
 	SportTrackPreview {
-		Box(modifier = Modifier.fillMaxSize()) {
+		Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
 			TrainingController()
 		}
 	}
@@ -57,7 +59,7 @@ private fun Preview() {
 @Composable
 private fun PreviewDisconnected() {
 	SportTrackPreview {
-		Box(modifier = Modifier.fillMaxSize()) {
+		Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
 			TrainingController(isConnected = false)
 		}
 	}
@@ -65,46 +67,48 @@ private fun PreviewDisconnected() {
 
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-fun BoxScope.TrainingController(
+fun ColumnScope.TrainingController(
 	isConnected: Boolean = true,
 	trackerConfig: TrackerConfig = TrackerConfig(),
 	onConnectClick: () -> Unit = {},
-	onConfigCommand: (command: TrackerCommand) -> Unit = {},
-	onStartClick: () -> Unit = {},
+	onCommand: (command: TrackerCommand) -> Unit = {},
 ) {
+	SensorErrorSnackbar(
+		trackerConfig = trackerConfig,
+		modifier = Modifier.offset(y = -FloatingToolbarDefaults.ScreenOffset),
+	)
+
 	Row(
 		modifier = Modifier
-			.align(Alignment.BottomCenter)
+			.align(Alignment.CenterHorizontally)
 			.offset(y = -FloatingToolbarDefaults.ScreenOffset),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		Box {
-			HorizontalFloatingToolbar(
-				expanded = false,
-				colors = if (isConnected)
-					FloatingToolbarDefaults.vibrantFloatingToolbarColors()
+		HorizontalFloatingToolbar(
+			expanded = false,
+			colors = if (isConnected)
+				FloatingToolbarDefaults.vibrantFloatingToolbarColors()
+			else
+				FloatingToolbarDefaults.standardFloatingToolbarColors(),
+			content = {
+				if (isConnected)
+					ConfigBarItems(trackerConfig, onCommand)
 				else
-					FloatingToolbarDefaults.standardFloatingToolbarColors(),
-				content = {
-					if (isConnected)
-						ConfigBarItems(trackerConfig, onConfigCommand)
-					else
-						Text(
-							stringResource(R.string.training_not_connected),
-							modifier = Modifier.padding(horizontal = 16.dp),
-							color = MaterialTheme.colorScheme.error,
-							fontWeight = FontWeight.Bold,
-							style = MaterialTheme.typography.titleLarge,
-						)
-				},
-			)
-		}
+					Text(
+						stringResource(R.string.training_not_connected),
+						modifier = Modifier.padding(horizontal = 16.dp),
+						color = MaterialTheme.colorScheme.error,
+						fontWeight = FontWeight.Bold,
+						style = MaterialTheme.typography.titleLarge,
+					)
+			},
+		)
 
 		Spacer(modifier = Modifier.width(8.dp))
 		FloatingActionButton(
 			onClick = {
 				if (isConnected)
-					onStartClick()
+					onCommand(TrackerCommand.start())
 				else
 					onConnectClick()
 			},
@@ -179,6 +183,7 @@ private fun ConfigBarItems(
 				leadingIcon = {
 					Iconics(icon)
 				},
+				enabled = mode != TrackerConfig.Mode.REACTION_TEST,
 			)
 		}
 	}
@@ -188,6 +193,7 @@ private fun ConfigBarItems(
 			distanceDialogShown = true
 		},
 		modifier = buttonModifier,
+		enabled = false,
 	) {
 		Iconics(CommunityMaterial.Icon3.cmd_ruler)
 	}

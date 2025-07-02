@@ -1,6 +1,6 @@
 package pl.szczodrzynski.tracker.ui.screen.training
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -88,15 +88,14 @@ fun TrainingScreen(
 	}
 
 	if (state is TrainingViewModel.State.InProgress) {
-		Box(modifier = Modifier.fillMaxSize()) {
+		Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
 			TrainingController(
 				isConnected = connectionState is ConnectionState.Connected,
 				trackerConfig = trackerConfig,
 				onConnectClick = {
 					mainVm.navigate(NavTarget.Home)
 				},
-				onConfigCommand = vm::sendCommand,
-				onStartClick = {},
+				onCommand = vm::sendCommand,
 			)
 		}
 	}

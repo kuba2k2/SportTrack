@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import pl.szczodrzynski.tracker.service.Utils
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.components.Iconics
+import pl.szczodrzynski.tracker.ui.components.SensorErrorSnackbar
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import java.time.LocalTime
@@ -186,5 +188,11 @@ fun HomeScreen(
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.home_training_create_new_button))
 		}
+	}
+
+	Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+		SensorErrorSnackbar(
+			trackerConfig = trackerConfig,
+		)
 	}
 }
