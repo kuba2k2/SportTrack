@@ -15,13 +15,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.service.data.TrackerConfig
+import pl.szczodrzynski.tracker.service.data.TrackerResult
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-class TrackerConnection : CoroutineScope {
+class TrackerConnection(
+	private val onResult: (result: TrackerResult) -> Unit,
+) : CoroutineScope {
 
 	override val coroutineContext = Job() + Dispatchers.IO
 
@@ -75,7 +78,14 @@ class TrackerConnection : CoroutineScope {
 
 					// current run results
 					line.startsWith("RUN;") -> {
-
+						val parts = line.substring(4).split(';')
+						val result = TrackerResult.parseResult(parts)
+						if (result == null) {
+							Timber.w("Failed to parse line '$line'")
+							continue
+						}
+						// send the parsed result
+						onResult(result)
 					}
 				}
 			}

@@ -21,7 +21,7 @@ class TrackerManager @Inject constructor(
 
 	override val coroutineContext = Job() + Dispatchers.IO
 
-	private val connection = TrackerConnection()
+	private val connection = TrackerConnection(::saveResult)
 	val trackerConfig = connection.trackerConfig
 
 	val training = appDb.trainingDao.getLatest()
