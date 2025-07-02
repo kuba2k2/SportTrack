@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import pl.szczodrzynski.tracker.data.db.AppDb
@@ -24,6 +25,7 @@ class TrackerManager @Inject constructor(
 	val trackerConfig = connection.trackerConfig
 
 	val training = appDb.trainingDao.getLatest()
+		.map { it.firstOrNull() }
 		.takeWhile {
 			it == null || it.dateTime.plus(6, ChronoUnit.HOURS) > Instant.now()
 		}

@@ -21,6 +21,8 @@ timber = "5.0.1"
 coil = "3.2.0"
 room = "2.7.2"
 desugar = "2.1.5"
+mapCompose = "3.0.0"
+okHttpBom = "4.12.0"
 
 [libraries]
 android-tools-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar"}
@@ -52,6 +54,10 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+mapcompose = { group = "ovh.plrapps", name = "mapcompose", version.ref = "mapCompose" }
+okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okHttpBom" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

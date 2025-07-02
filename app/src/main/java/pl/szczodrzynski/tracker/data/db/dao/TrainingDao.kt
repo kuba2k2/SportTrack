@@ -26,8 +26,8 @@ interface TrainingDao {
 	@Query("SELECT * FROM training")
 	fun getAll(): Flow<List<Training>>
 
-	@Query("SELECT * FROM training ORDER BY dateTime DESC LIMIT 1")
-	fun getLatest(): Flow<Training?>
+	@Query("SELECT * FROM training ORDER BY dateTime DESC")
+	fun getLatest(): Flow<List<Training>>
 
 	@Transaction
 	@Query("SELECT * from training WHERE id = :id")
