@@ -1,19 +1,23 @@
 package pl.szczodrzynski.tracker.ui.screen.training
 
-import android.Manifest
 import android.content.Context
-import androidx.core.content.PermissionChecker
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.common.api.ResolvableApiException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
-import timber.log.Timber
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +36,7 @@ class TrainingViewModel @Inject constructor(
 	val state = _state.asStateFlow()
 
 	private lateinit var training: TrainingFull
+	private val metadataManager = TrainingMetadataManager()
 
 	fun loadTraining(id: Int) = viewModelScope.launch {
 		if (state.value !is State.Loading)
@@ -46,13 +51,79 @@ class TrainingViewModel @Inject constructor(
 		}
 	}
 
-	fun checkLocationPermission(context: Context) =
-		PermissionChecker.checkSelfPermission(
-			context,
-			Manifest.permission.ACCESS_FINE_LOCATION
-		) == PermissionChecker.PERMISSION_GRANTED
+	fun updateTrainingMetadata(
+		context: Context,
+		onPermissionRequired: (permissions: List<String>) -> Unit,
+		onLocationDisabled: (e: ResolvableApiException) -> Unit,
+		onProgress: (inProgress: Boolean) -> Unit,
+	) = viewModelScope.launch {
+		var locationLat = training.training.locationLat
+		var locationLon = training.training.locationLon
 
-	fun fetchTrainingLocation() = viewModelScope.launch {
-		Timber.d("Fetching location for training $training")
+		// if location is not saved, fetch it and return if not possible
+		if (locationLat == null || locationLon == null) {
+			onProgress(true)
+			if (!metadataManager.checkLocationPermissions(context).containsValue(true)) {
+				onPermissionRequired(metadataManager.getLocationPermissions())
+				return@launch
+			}
+			try {
+				val location = metadataManager.fetchCurrentLocation(context)
+				if (location == null) {
+					onProgress(false)
+					return@launch
+				}
+				locationLat = location.latitude
+				locationLon = location.longitude
+			} catch (e: Exception) {
+				if (e is ResolvableApiException)
+					onLocationDisabled(e)
+				else
+					onProgress(false)
+				return@launch
+			}
+		}
+
+		// if location name is not saved, run the Geocoder
+		var locality: String? = null
+		val locationName = training.training.locationName ?: run {
+			onProgress(true)
+			try {
+				val address = metadataManager.fetchLocationAddress(context, locationLat, locationLon)
+				locality = address?.locality
+				listOfNotNull(
+					address?.thoroughfare,
+					address?.featureName,
+					address?.locality,
+				).joinToString().takeIf { it.isNotEmpty() }
+			} catch (e: Exception) {
+				null
+			}
+		}
+
+		// update the title if it's still the default
+		val time = training.training.dateTime.atZone(ZoneId.systemDefault())
+			.toLocalTime()
+			.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+		val defaultTitle = context.getString(R.string.training_default_title, time)
+		val title = if (training.training.title != defaultTitle || locality == null)
+			training.training.title
+		else
+			context.getString(R.string.training_located_title, locality)
+
+		val newTraining = training.training.copy(
+			title = title,
+			locationName = locationName,
+			locationLat = locationLat,
+			locationLon = locationLon,
+		)
+
+		// save training if changed
+		if (newTraining != training.training) {
+			withContext(Dispatchers.IO) {
+				appDb.trainingDao.update(newTraining)
+			}
+		}
+		onProgress(false)
 	}
 }

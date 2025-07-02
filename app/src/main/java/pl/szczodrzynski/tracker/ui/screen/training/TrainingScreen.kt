@@ -1,20 +1,27 @@
 package pl.szczodrzynski.tracker.ui.screen.training
 
-import android.Manifest
+import android.app.Activity.RESULT_OK
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
+import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
+import timber.log.Timber
 
 @Preview
 @Composable
@@ -41,20 +48,43 @@ fun TrainingScreen(
 		is TrainingViewModel.State.Finished -> localState.training
 	}
 
-	// fetch training location if not already set
-	var hasLocationPermission by remember { mutableStateOf(vm.checkLocationPermission(context)) }
-	val launcher = rememberLauncherForActivityResult(RequestPermission()) {
-		hasLocationPermission = it
+	var locationInProgress by remember { mutableStateOf(false) }
+	var locationPermissions by remember { mutableStateOf(mapOf<String, Boolean>()) }
+	var locationWasEnabled by remember { mutableIntStateOf(0) }
+
+	val permissionLauncher = rememberLauncherForActivityResult(RequestMultiplePermissions()) {
+		locationInProgress = false
+		locationPermissions = it
 	}
-	LaunchedEffect(hasLocationPermission) {
-		if (training.training.locationName != null)
-			return@LaunchedEffect
-		if (!hasLocationPermission) {
-			launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-			return@LaunchedEffect
-		}
-		vm.fetchTrainingLocation()
+	val locationLauncher = rememberLauncherForActivityResult(StartIntentSenderForResult()) {
+		locationInProgress = false
+		if (it.resultCode == RESULT_OK)
+			locationWasEnabled++
 	}
 
-	Text("Training: $training")
+	// retry locating if the permissions change or device location is enabled
+	LaunchedEffect(locationPermissions, locationWasEnabled) {
+		vm.updateTrainingMetadata(
+			context = context,
+			onPermissionRequired = { permissions ->
+				Timber.d("Requesting location permissions")
+				permissionLauncher.launch(permissions.toTypedArray())
+			},
+			onLocationDisabled = { e ->
+				Timber.d("Requesting location enabling")
+				e.status.startResolutionForResult(locationLauncher)
+			},
+			onProgress = { inProgress ->
+				locationInProgress = inProgress
+			},
+		)
+	}
+
+	Column(modifier = Modifier.fillMaxSize()) {
+		if (locationInProgress) {
+			CircularProgressIndicator()
+		}
+
+		Text("Training: $training")
+	}
 }

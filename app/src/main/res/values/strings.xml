@@ -56,4 +56,5 @@
 	<string name="home_training_continue_button">Kontynuuj</string>
 	<string name="home_training_create_new_button">Rozpocznij nowy</string>
 	<string name="training_default_title">Trening o %s</string>
+	<string name="training_located_title">Trening w %s</string>
 </resources>

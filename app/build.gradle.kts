@@ -60,6 +60,7 @@ dependencies {
 	implementation(platform(libs.google.firebase))
 	implementation(libs.google.firebase.auth)
 	implementation(libs.google.identity.googleid)
+	implementation(libs.google.gms.location)
 	implementation(libs.iconics.compose)
 	implementation(libs.iconics.typeface.cmd)
 	implementation(libs.timber)
