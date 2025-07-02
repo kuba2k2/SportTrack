@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,10 +48,12 @@ fun TrainingScreen(
 	val training = trainingFull.training
 
 	var locationInProgress by remember { mutableStateOf(false) }
+	var locationRetryCount by remember { mutableIntStateOf(0) }
 
 	if (state is TrainingViewModel.State.InProgress) {
 		TrainingMetadataUpdater(
 			vm = vm,
+			retryCount = locationRetryCount,
 			onLocationProgress = {
 				locationInProgress = it
 			},
@@ -72,6 +75,9 @@ fun TrainingScreen(
 				.padding(horizontal = 16.dp)
 				.fillMaxWidth()
 				.height(200.dp),
+			onRetry = {
+				locationRetryCount++
+			},
 		)
 
 		Text("Training: $training")

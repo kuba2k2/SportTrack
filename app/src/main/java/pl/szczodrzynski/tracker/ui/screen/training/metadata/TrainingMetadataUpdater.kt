@@ -18,6 +18,7 @@ import timber.log.Timber
 @Composable
 fun TrainingMetadataUpdater(
 	vm: TrainingViewModel,
+	retryCount: Int = 0,
 	onLocationProgress: (inProgress: Boolean) -> Unit,
 ) {
 	val context = LocalContext.current
@@ -36,7 +37,7 @@ fun TrainingMetadataUpdater(
 	}
 
 	// retry locating if the permissions change or device location is enabled
-	LaunchedEffect(locationPermissions, locationWasEnabled) {
+	LaunchedEffect(locationPermissions, locationWasEnabled, retryCount) {
 		vm.updateTrainingMetadata(
 			context = context,
 			onPermissionRequired = { permissions ->

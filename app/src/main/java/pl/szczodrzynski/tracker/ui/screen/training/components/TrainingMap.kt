@@ -2,6 +2,7 @@ package pl.szczodrzynski.tracker.ui.screen.training.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -65,11 +66,15 @@ fun TrainingMap(
 	training: Training,
 	isLoading: Boolean,
 	modifier: Modifier = Modifier,
+	onRetry: () -> Unit = {},
 ) {
 	Column(
 		modifier = modifier
 			.clip(RoundedCornerShape(16.dp))
-			.background(MaterialTheme.colorScheme.surfaceContainerHigh),
+			.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+			.clickable(enabled = !isLoading && training.locationLat == null) {
+				onRetry()
+			},
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {
