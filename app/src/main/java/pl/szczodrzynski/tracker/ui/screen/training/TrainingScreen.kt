@@ -2,8 +2,6 @@ package pl.szczodrzynski.tracker.ui.screen.training
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,21 +58,18 @@ fun TrainingScreen(
 		)
 	}
 
-	Column(modifier = Modifier.fillMaxSize()) {
+	Column {
 		Text(
 			training.title,
 			modifier = Modifier
-				.padding(horizontal = 16.dp, vertical = 16.dp),
+				.padding(horizontal = 16.dp)
+				.padding(top = 16.dp),
 			style = MaterialTheme.typography.headlineMedium,
 		)
 
 		TrainingMap(
 			training = training,
 			isLoading = locationInProgress,
-			modifier = Modifier
-				.padding(horizontal = 16.dp)
-				.fillMaxWidth()
-				.height(200.dp),
 			onRetry = {
 				locationRetryCount++
 			},

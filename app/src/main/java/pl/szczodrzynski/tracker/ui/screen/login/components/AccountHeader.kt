@@ -8,15 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
-import timber.log.Timber
 
 @Composable
 @Preview
@@ -34,10 +32,10 @@ fun AccountHeader(modifier: Modifier = Modifier) {
 
 	Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
 		if (photoUrl == null)
-			Image(
-				CommunityMaterial.Icon.cmd_account_circle_outline,
-				modifier = Modifier.size(96.dp),
-				colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
+			Iconics(
+				icon = CommunityMaterial.Icon.cmd_account_circle_outline,
+				size = 96.dp,
+				color = MaterialTheme.colorScheme.tertiary,
 			)
 		else
 			AsyncImage(

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -27,19 +26,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.service.Utils
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.ui.NavTarget
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import java.time.LocalTime
@@ -157,11 +155,7 @@ fun HomeScreen(
 				.height(size),
 			contentPadding = ButtonDefaults.contentPaddingFor(size),
 		) {
-			Image(
-				CommunityMaterial.Icon3.cmd_run,
-				modifier = Modifier.size(ButtonDefaults.iconSizeFor(size)),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon3.cmd_run, size = ButtonDefaults.iconSizeFor(size))
 			Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(size)))
 			Text(
 				stringResource(
@@ -184,11 +178,7 @@ fun HomeScreen(
 			},
 			shapes = ButtonDefaults.shapes(),
 		) {
-			Image(
-				CommunityMaterial.Icon3.cmd_plus,
-				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon3.cmd_plus, size = ButtonDefaults.IconSize)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.home_training_create_new_button))
 		}

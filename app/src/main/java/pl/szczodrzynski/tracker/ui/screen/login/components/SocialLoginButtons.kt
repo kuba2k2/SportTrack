@@ -9,17 +9,15 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.theme.SportTrackTheme
 
 @Preview
@@ -53,11 +51,7 @@ internal fun SocialLoginButtons(
 			),
 			enabled = enabled,
 		) {
-			Image(
-				CommunityMaterial.Icon2.cmd_google,
-				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon2.cmd_google, size = ButtonDefaults.IconSize)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_google_button))
 		}
@@ -69,11 +63,7 @@ internal fun SocialLoginButtons(
 			),
 			enabled = false,
 		) {
-			Image(
-				CommunityMaterial.Icon2.cmd_facebook,
-				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon2.cmd_facebook, size = ButtonDefaults.IconSize)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_facebook_button))
 		}

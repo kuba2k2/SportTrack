@@ -11,7 +11,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,17 +18,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.ui.NavTarget
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.screen.login.components.AccountHeader
 import pl.szczodrzynski.tracker.ui.screen.login.components.AccountInfo
@@ -190,11 +188,7 @@ fun LoginScreen(
 			shapes = ButtonDefaults.shapes(),
 			enabled = enabled,
 		) {
-			Image(
-				CommunityMaterial.Icon.cmd_account_plus_outline,
-				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon.cmd_account_plus_outline, size = ButtonDefaults.IconSize)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_sign_up_button))
 		}
@@ -207,11 +201,7 @@ fun LoginScreen(
 			shapes = ButtonDefaults.shapes(),
 			enabled = enabled,
 		) {
-			Image(
-				CommunityMaterial.Icon.cmd_account_off_outline,
-				modifier = Modifier.size(ButtonDefaults.IconSize),
-				colorFilter = ColorFilter.tint(LocalContentColor.current),
-			)
+			Iconics(CommunityMaterial.Icon.cmd_account_off_outline, size = ButtonDefaults.IconSize)
 			Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 			Text(stringResource(R.string.login_guest_button))
 		}

@@ -9,26 +9,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.ServiceState
 import pl.szczodrzynski.tracker.service.data.TrackerDevice
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import java.io.IOException
 
@@ -81,10 +79,10 @@ fun ConnectionState(
 	onConnect: () -> Unit = {},
 	onDisconnect: () -> Unit = {},
 ) {
-	Image(
-		asset = getIcon(serviceState, connectionState),
-		modifier = Modifier.size(96.dp),
-		colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
+	Iconics(
+		icon = getIcon(serviceState, connectionState),
+		size = 96.dp,
+		color = MaterialTheme.colorScheme.tertiary,
 	)
 	Text(
 		text = stringResource(getText(serviceState, connectionState)),
@@ -163,10 +161,9 @@ fun ConnectionState(
 			is ConnectionState.Disconnected,
 			is ConnectionState.Connecting,
 				-> {
-				Image(
-					asset = CommunityMaterial.Icon.cmd_connection,
-					modifier = Modifier.size(ButtonDefaults.iconSizeFor(size)),
-					colorFilter = ColorFilter.tint(LocalContentColor.current)
+				Iconics(
+					icon = CommunityMaterial.Icon.cmd_connection,
+					size = ButtonDefaults.iconSizeFor(size),
 				)
 				Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(size)))
 				if (connectionState is ConnectionState.Disconnected && connectionState.error != null)
@@ -176,10 +173,9 @@ fun ConnectionState(
 			}
 
 			is ConnectionState.Connected -> {
-				Image(
-					asset = CommunityMaterial.Icon.cmd_close,
-					modifier = Modifier.size(ButtonDefaults.iconSizeFor(size)),
-					colorFilter = ColorFilter.tint(LocalContentColor.current)
+				Iconics(
+					icon = CommunityMaterial.Icon.cmd_close,
+					size = ButtonDefaults.iconSizeFor(size),
 				)
 				Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(size)))
 				Text(stringResource(R.string.home_disconnect), style = style)

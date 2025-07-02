@@ -5,8 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
@@ -16,15 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.entity.Training
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.components.OpenStreetMap
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 
@@ -70,6 +70,9 @@ fun TrainingMap(
 ) {
 	Column(
 		modifier = modifier
+			.padding(16.dp)
+			.fillMaxWidth()
+			.height(200.dp)
 			.clip(RoundedCornerShape(16.dp))
 			.background(MaterialTheme.colorScheme.surfaceContainerHigh)
 			.clickable(enabled = !isLoading && training.locationLat == null) {
@@ -92,14 +95,14 @@ fun TrainingMap(
 			}
 
 			else -> {
-				Image(
-					CommunityMaterial.Icon3.cmd_map_marker_off_outline,
+				Iconics(
+					icon = CommunityMaterial.Icon3.cmd_map_marker_off_outline,
+					size = 64.dp,
+					color = MaterialTheme.colorScheme.secondary,
 					modifier = Modifier
-						.size(64.dp)
 						.graphicsLayer {
 							alpha = 0.5f
 						},
-					colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary),
 				)
 				Text(
 					stringResource(R.string.training_no_location),

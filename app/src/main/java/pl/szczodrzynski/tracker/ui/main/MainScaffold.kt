@@ -14,7 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -25,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -38,11 +36,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
-import com.mikepenz.iconics.compose.Image
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
+import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
@@ -101,10 +99,7 @@ fun MainScaffold() {
 					IconButton(onClick = {
 						navController.navigateUp()
 					}) {
-						Image(
-							CommunityMaterial.Icon.cmd_arrow_left,
-							colorFilter = ColorFilter.tint(LocalContentColor.current),
-						)
+						Iconics(CommunityMaterial.Icon.cmd_arrow_left)
 					}
 				},
 				actions = {
@@ -114,10 +109,7 @@ fun MainScaffold() {
 								mainVm.navigate(NavTarget.Profile)
 							},
 						) {
-							Image(
-								CommunityMaterial.Icon.cmd_account_circle_outline,
-								colorFilter = ColorFilter.tint(LocalContentColor.current),
-							)
+							Iconics(CommunityMaterial.Icon.cmd_account_circle_outline)
 						}
 
 						else -> AsyncImage(
@@ -148,10 +140,7 @@ fun MainScaffold() {
 							mainVm.navigate(target)
 						},
 						icon = {
-							Image(
-								target.icon,
-								colorFilter = ColorFilter.tint(LocalContentColor.current),
-							)
+							Iconics(target.icon)
 						},
 						enabled = target != NavTarget.Training || training != null,
 						label = {
