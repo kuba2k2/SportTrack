@@ -35,6 +35,7 @@ private fun Preview() {
 
 @Composable
 fun TrainingScreen(
+	trainingId: Int? = null,
 	vm: TrainingViewModel = hiltViewModel(),
 ) {
 	val mainVm = LocalMainViewModel.current
@@ -44,7 +45,7 @@ fun TrainingScreen(
 
 	val trainingFull = when (val localState = state) {
 		is TrainingViewModel.State.Loading -> {
-			TrainingLoading(vm)
+			TrainingLoading(vm, trainingId)
 			return
 		}
 

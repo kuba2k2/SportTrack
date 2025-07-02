@@ -46,6 +46,7 @@ class TrainingViewModel @Inject constructor(
 			return@launch
 		_state.update { State.Loading }
 		appDb.trainingDao.getOneFull(id).collect { training ->
+			training ?: return@collect
 			this@TrainingViewModel.training = training
 			if (training.training.id == manager.training.value?.id)
 				_state.update { State.InProgress(training) }

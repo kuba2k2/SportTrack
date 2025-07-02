@@ -31,5 +31,5 @@ interface TrainingDao {
 
 	@Transaction
 	@Query("SELECT * from training WHERE id = :id")
-	fun getOneFull(id: Int): Flow<TrainingFull>
+	fun getOneFull(id: Int): Flow<TrainingFull?>
 }

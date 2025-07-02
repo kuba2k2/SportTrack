@@ -40,6 +40,7 @@ import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.components.navTypeMap
+import pl.szczodrzynski.tracker.ui.screen.history.HistoryScreen
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
@@ -181,8 +182,8 @@ fun MainScaffold() {
 				TrainingScreen()
 			}
 
-			composable<NavTarget.History> {
-				Text(stringResource(R.string.history_title))
+			composable<NavTarget.History>(typeMap = navTypeMap) {
+				HistoryScreen(trainingId = (navTarget as? NavTarget.History)?.trainingId)
 			}
 
 			composable<NavTarget.Profile> {
