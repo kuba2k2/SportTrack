@@ -2,8 +2,13 @@ package pl.szczodrzynski.tracker.ui.screen.training
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +39,7 @@ private fun Preview() {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun TrainingScreen(
 	trainingId: Int? = null,
 	vm: TrainingViewModel = hiltViewModel(),
@@ -67,24 +73,36 @@ fun TrainingScreen(
 		)
 	}
 
-	Column {
-		Text(
-			training.title,
-			modifier = Modifier
-				.padding(horizontal = 16.dp)
-				.padding(top = 16.dp),
-			style = MaterialTheme.typography.headlineMedium,
-		)
+	LazyColumn(modifier = Modifier.fillMaxSize()) {
+		item(key = "title") {
+			Text(
+				training.title,
+				modifier = Modifier
+					.padding(horizontal = 16.dp)
+					.padding(top = 16.dp),
+				style = MaterialTheme.typography.headlineMedium,
+			)
+		}
 
-		TrainingMap(
-			training = training,
-			isLoading = locationInProgress,
-			onRetry = {
-				locationRetryCount++
-			},
-		)
+		item(key = "map") {
+			TrainingMap(
+				training = training,
+				isLoading = locationInProgress,
+				onRetry = {
+					locationRetryCount++
+				},
+			)
+		}
 
-		Text("Training: $training")
+		item(key = "dbg1") {
+			Text("Training: $training")
+			if (vm.manager.isStarted)
+				Text("Runs: ${trainingFull.runList}")
+		}
+
+		item(key = "spacer") {
+			Spacer(modifier = Modifier.height(FloatingToolbarDefaults.ContainerSize + FloatingToolbarDefaults.ScreenOffset + 16.dp))
+		}
 	}
 
 	if (state is TrainingViewModel.State.InProgress) {

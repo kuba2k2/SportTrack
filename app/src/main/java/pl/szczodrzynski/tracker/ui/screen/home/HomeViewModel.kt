@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.Training
 import pl.szczodrzynski.tracker.manager.TrackerManager
+import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,6 +17,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
 	fun createTraining(title: String) = viewModelScope.launch {
+		manager.sendCommand(TrackerCommand.reset())
 		val training = Training(
 			title = title,
 		)
