@@ -50,4 +50,10 @@
 	<string name="profile_title">Profil</string>
 	<string name="history_title">Historia</string>
 	<string name="login_logout_button">Wyloguj się</string>
+	<string name="home_training_new_title">Rozpocznij trening</string>
+	<string name="home_training_continue_title">Kontynuuj trening</string>
+	<string name="home_training_new_button">Rozpocznij</string>
+	<string name="home_training_continue_button">Kontynuuj</string>
+	<string name="home_training_create_new_button">Rozpocznij nowy</string>
+	<string name="training_default_title">Trening o %s</string>
 </resources>

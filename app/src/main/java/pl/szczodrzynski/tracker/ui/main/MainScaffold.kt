@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,7 +45,6 @@ import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
-import timber.log.Timber
 
 @Composable
 @Preview
@@ -82,6 +82,8 @@ fun MainScaffold() {
 	val navTarget = currentBackStackEntry
 		?.let(NavTarget::deserialize)
 		?: mainVm.initialRoute
+
+	val training by mainVm.manager.training.collectAsStateWithLifecycle()
 
 	Scaffold(
 		modifier = Modifier
@@ -140,16 +142,17 @@ fun MainScaffold() {
 			NavigationBar {
 				navigationBarItems.forEach { target ->
 					NavigationBarItem(
+						selected = navTarget == target,
+						onClick = {
+							mainVm.navigate(target)
+						},
 						icon = {
 							Image(
 								target.icon,
 								colorFilter = ColorFilter.tint(LocalContentColor.current),
 							)
 						},
-						selected = navTarget == target,
-						onClick = {
-							mainVm.navigate(target)
-						},
+						enabled = target != NavTarget.Training || training != null,
 						label = {
 							Text(stringResource(target.titleRes))
 						},

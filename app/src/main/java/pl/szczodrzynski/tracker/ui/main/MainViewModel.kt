@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.TrackerService
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.service.data.ServiceState
@@ -28,7 +29,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel(), ServiceConnection {
+class MainViewModel @Inject constructor(
+	val manager: TrackerManager,
+) : ViewModel(), ServiceConnection {
 
 	var initialRoute: NavTarget = NavTarget.Login
 	var nextRoute = MutableSharedFlow<NavTarget>(replay = 1)
