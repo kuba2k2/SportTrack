@@ -23,7 +23,7 @@ import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 class TrackerConnection(
-	private val onResult: (result: TrackerResult) -> Unit,
+	private val onResult: suspend (result: TrackerResult) -> Unit,
 ) : CoroutineScope {
 
 	override val coroutineContext = Job() + Dispatchers.IO
@@ -38,14 +38,14 @@ class TrackerConnection(
 	fun start(socket: BluetoothSocket): Job {
 		val reader = socket.inputStream.bufferedReader()
 		writer = socket.outputStream.bufferedWriter()
-		val job = launch(Dispatchers.IO) {
+		val job = launch {
 			processData(reader)
 		}
 		connectionJob = job
 		return job
 	}
 
-	private fun processData(reader: BufferedReader) {
+	private suspend fun processData(reader: BufferedReader) = withContext(Dispatchers.IO) {
 		try {
 			Timber.d("Starting tracker manager")
 

@@ -43,6 +43,7 @@ import pl.szczodrzynski.tracker.ui.components.navTypeMap
 import pl.szczodrzynski.tracker.ui.screen.history.HistoryScreen
 import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
+import pl.szczodrzynski.tracker.ui.screen.training.TrainingRunDialog
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
 
 @Composable
@@ -82,6 +83,22 @@ fun MainScaffold() {
 		?: mainVm.initialRoute
 
 	val training by mainVm.manager.training.collectAsStateWithLifecycle()
+	val trainingRun by mainVm.manager.currentRun.collectAsStateWithLifecycle(null)
+	val lastResult by mainVm.manager.lastResult.collectAsStateWithLifecycle()
+
+	if (training != null && mainVm.manager.isStarted) {
+		trainingRun?.let {
+			TrainingRunDialog(
+				trainingRun = it,
+				lastResult = lastResult,
+				finishTimeout = mainVm.manager.finishTimeout.value,
+				onDismiss = {
+					if (trainingRun?.run?.isFinished == false)
+						mainVm.manager.finishCurrentRun()
+				},
+			)
+		}
+	}
 
 	Scaffold(
 		modifier = Modifier

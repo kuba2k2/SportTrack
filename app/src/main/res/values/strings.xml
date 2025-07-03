@@ -79,4 +79,12 @@
 	<string name="training_sensor_error">Błąd czujnika</string>
 	<string name="training_config_auto_finish_off">Autom. zakończenie - wył.</string>
 	<string name="training_config_auto_finish">Autom. zakończenie - %d s</string>
+	<string name="training_run_waiting_for_results">Czekam na wyniki...</string>
+	<string name="training_run_close">Zamknij</string>
+	<string name="training_run_finish">Zakończ</string>
+	<string name="training_run_state_on_your_marks">Na miejsca...</string>
+	<string name="training_run_state_ready">Gotów...</string>
+	<string name="training_run_state_start">Start!</string>
+	<string name="seconds_format">%.02f s</string>
+	<string name="seconds_format_plus">+%.02f s</string>
 </resources>

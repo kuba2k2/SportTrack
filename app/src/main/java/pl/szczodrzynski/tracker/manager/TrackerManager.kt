@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.Athlete
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
@@ -41,6 +42,8 @@ class TrackerManager @Inject constructor(
 		}
 		.stateIn(scope = this, started = SharingStarted.Eagerly, initialValue = null)
 
+	val currentRun = appDb.trainingRunDao.getCurrentFull()
+
 	fun start(socket: BluetoothSocket) = connection.start(socket)
 	fun stop() = connection.stop()
 	suspend fun sendCommand(command: TrackerCommand) = connection.sendCommand(command)
@@ -61,9 +64,9 @@ class TrackerManager @Inject constructor(
 	var finishTimeout = MutableStateFlow(20000)
 	var athlete = MutableStateFlow<Athlete?>(null)
 
-	fun saveResult(result: TrackerResult) = launch {
+	suspend fun saveResult(result: TrackerResult) = withContext(Dispatchers.IO) {
 		Timber.d("Received result: $result")
-		val training = training.value ?: return@launch
+		val training = training.value ?: return@withContext
 
 		val startCommand =
 			result.mode == TrackerConfig.Mode.START_ON_SIGNAL && result.type == TrackerResult.Type.ON_YOUR_MARKS
@@ -108,24 +111,32 @@ class TrackerManager @Inject constructor(
 
 		// set a timeout if at least one split is already saved
 		if (trainingRunHasSplits && finishTimeout.value != 0) {
-			trainingRunTimeout = launch(Dispatchers.IO) {
-				delay(finishTimeout.value.toLong())
-				Timber.d("Finishing run $trainingRun")
-				finishRun()
-			}
+			trainingRunTimeout = launchTimeout()
 		}
 
-		_lastResult.update { result }
+		_lastResult.update {
+			when (result.type) {
+				TrackerResult.Type.ON_YOUR_MARKS, TrackerResult.Type.READY, TrackerResult.Type.START -> result
+				TrackerResult.Type.DELAY -> lastResult.value?.copy(millis = result.millis)
+				TrackerResult.Type.SPLIT -> lastResult.value
+			}
+		}
 	}
 
-	suspend fun finishRun() {
+	private fun launchTimeout() = launch(Dispatchers.IO) {
+		delay(finishTimeout.value.toLong())
+		Timber.d("Finishing run $trainingRun")
+		finishRun()
+	}
+
+	private suspend fun finishRun(timeout: Boolean = false) {
 		trainingRun?.copy(isFinished = true)?.let {
 			appDb.trainingRunDao.update(it)
 		}
 		trainingRun = null
 		trainingRunHasSplits = false
 		isStarted = false
-		if (trackerConfig.value.mode == TrackerConfig.Mode.FLYING_START) {
+		if (timeout && trackerConfig.value.mode == TrackerConfig.Mode.FLYING_START) {
 			startedAutomatically = true
 			sendCommand(TrackerCommand.start())
 		} else {
@@ -136,5 +147,9 @@ class TrackerManager @Inject constructor(
 		appDb.trainingRunDao.cleanupEmpty()
 		// cancel last, as finishRun() is ran from that same job
 		trainingRunTimeout?.cancel()
+	}
+
+	fun finishCurrentRun() = launch(Dispatchers.IO) {
+		finishRun()
 	}
 }

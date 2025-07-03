@@ -14,7 +14,7 @@ data class TrainingRunFull(
 		parentColumn = "id",
 		entityColumn = "trainingRunId",
 	)
-	val splits: List<TrainingRunSplit>,
+	val splits: List<TrainingRunSplit>?,
 
 	@Relation(
 		parentColumn = "athleteId",
