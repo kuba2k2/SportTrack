@@ -74,6 +74,7 @@ fun LoginScreen(
 	val context = LocalContext.current
 	val scrollState = rememberScrollState()
 	val state by vm.state.collectAsStateWithLifecycle()
+	val syncState by mainVm.sync.state.collectAsStateWithLifecycle()
 
 	val enabled = state !is LoginViewModel.State.Loading
 	val user = (state as? LoginViewModel.State.Success)?.user
@@ -97,6 +98,13 @@ fun LoginScreen(
 			AccountInfo(
 				name = user.displayName ?: "",
 				email = user.email ?: "",
+				syncState = syncState,
+				onUploadSync = {
+					mainVm.sync.startSyncUpload()
+				},
+				onDownloadSync = {
+					mainVm.sync.startSyncDownload()
+				},
 			)
 
 		if (isProfile || user != null) {

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.szczodrzynski.tracker.manager.SyncManager
 import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.TrackerService
 import pl.szczodrzynski.tracker.service.data.ConnectionState
@@ -31,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
 	val manager: TrackerManager,
+	val sync: SyncManager,
 ) : ViewModel(), ServiceConnection {
 
 	var initialRoute: NavTarget = NavTarget.Login

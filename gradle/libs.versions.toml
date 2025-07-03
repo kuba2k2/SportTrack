@@ -23,6 +23,7 @@ room = "2.7.2"
 desugar = "2.1.5"
 mapCompose = "3.0.0"
 okHttpBom = "4.12.0"
+kotlinSerializationJson = "1.8.1"
 
 [libraries]
 android-tools-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
@@ -43,6 +44,7 @@ hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-comp
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 google-firebase = { group = "com.google.firebase", name = "firebase-bom", version.ref = "googleFirebase" }
 google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 google-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleIdentity" }
 google-gms-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "googleGmsLocation" }
 iconics-compose = { group = "com.mikepenz", name = "iconics-compose", version.ref = "iconics" }
@@ -58,6 +60,7 @@ mapcompose = { group = "ovh.plrapps", name = "mapcompose", version.ref = "mapCom
 okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okHttpBom" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

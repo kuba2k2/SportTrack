@@ -1,12 +1,14 @@
 package pl.szczodrzynski.tracker.ui.main
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
@@ -20,6 +22,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
+import pl.szczodrzynski.tracker.manager.SyncManager
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.components.Iconics
@@ -70,12 +74,15 @@ fun MainScaffold() {
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
 	LaunchedEffect(Unit) {
+		// mainVm.sync.startSync()
 		mainVm.nextRoute.collect {
 			navController.navigate(it) {
 				setPopUpTo(it)
 			}
 		}
 	}
+
+	val syncState by mainVm.sync.state.collectAsStateWithLifecycle()
 
 	val currentBackStackEntry by navController.currentBackStackEntryAsState()
 	val navTarget = currentBackStackEntry
@@ -119,27 +126,35 @@ fun MainScaffold() {
 					}
 				},
 				actions = {
-					when (val photoUrl = mainVm.currentUser?.photoUrl) {
-						null -> FilledTonalIconButton(
-							onClick = {
-								mainVm.navigate(NavTarget.Profile)
-							},
-						) {
-							Iconics(CommunityMaterial.Icon.cmd_account_circle_outline)
-						}
-
-						else -> AsyncImage(
-							photoUrl.toString(),
-							contentDescription = mainVm.currentUser?.displayName,
-							contentScale = ContentScale.Crop,
-							modifier = Modifier
-								.padding(4.dp)
-								.size(IconButtonDefaults.smallContainerSize())
-								.clip(CircleShape)
-								.clickable {
+					Box(contentAlignment = Alignment.Center) {
+						when (val photoUrl = mainVm.currentUser?.photoUrl) {
+							null -> FilledTonalIconButton(
+								onClick = {
 									mainVm.navigate(NavTarget.Profile)
 								},
-						)
+							) {
+								Iconics(CommunityMaterial.Icon.cmd_account_circle_outline)
+							}
+
+							else -> AsyncImage(
+								photoUrl.toString(),
+								contentDescription = mainVm.currentUser?.displayName,
+								contentScale = ContentScale.Crop,
+								modifier = Modifier
+									.padding(4.dp)
+									.size(IconButtonDefaults.smallContainerSize())
+									.clip(CircleShape)
+									.clickable {
+										mainVm.navigate(NavTarget.Profile)
+									},
+							)
+						}
+
+						if (syncState is SyncManager.State.UploadSuccess || syncState is SyncManager.State.Downloading) {
+							CircularProgressIndicator(
+								modifier = Modifier.size(IconButtonDefaults.smallContainerSize()),
+							)
+						}
 					}
 				},
 				scrollBehavior = scrollBehavior,
