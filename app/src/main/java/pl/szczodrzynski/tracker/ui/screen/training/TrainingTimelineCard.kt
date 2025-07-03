@@ -173,7 +173,6 @@ private fun TrainingCommentCard(
 				.padding(start = 4.dp)
 				.weight(1.0f),
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
-			maxLines = 3,
 		)
 		Text(
 			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),

@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
+import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
@@ -148,5 +149,9 @@ class TrainingViewModel @Inject constructor(
 			appDb.trainingCommentDao.insert(newComment)
 		else
 			appDb.trainingCommentDao.update(newComment)
+	}
+
+	fun saveRun(run: TrainingRun) = viewModelScope.launch {
+		appDb.trainingRunDao.update(run)
 	}
 }

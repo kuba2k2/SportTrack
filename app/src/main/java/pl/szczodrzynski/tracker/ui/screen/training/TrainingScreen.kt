@@ -99,7 +99,7 @@ fun TrainingScreen(
 				value ?: return@EditTextDialog
 				vm.saveTitle(value)
 			},
-			title = stringResource(R.string.training_edit_comment_title),
+			title = stringResource(R.string.training_edit_title_title),
 		)
 	}
 
@@ -111,6 +111,11 @@ fun TrainingScreen(
 			onDismiss = {
 				trainingRunDialogItem = null
 			},
+			onDescription = { value ->
+				val newRun = it.copy(run = it.run.copy(description = value))
+				vm.saveRun(newRun.run)
+				trainingRunDialogItem = newRun
+			}
 		)
 	}
 
