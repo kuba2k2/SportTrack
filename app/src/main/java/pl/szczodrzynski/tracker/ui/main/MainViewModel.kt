@@ -51,6 +51,8 @@ class MainViewModel @Inject constructor(
 	private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.NoBluetoothSupport)
 	val connectionState = _connectionState.asStateFlow()
 
+	val forceRunDialog = MutableStateFlow(false)
+
 	init {
 		try {
 			val auth = Firebase.auth

@@ -29,10 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
+import kotlinx.coroutines.flow.update
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingRunFull
+import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.data.ConnectionState
+import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.components.EditTextDialog
 import pl.szczodrzynski.tracker.ui.components.FullscreenLoadingIndicator
@@ -63,6 +66,7 @@ fun TrainingScreen(
 ) {
 	val mainVm = LocalMainViewModel.current
 	val state by vm.state.collectAsStateWithLifecycle()
+	val runState by vm.manager.runState.collectAsStateWithLifecycle()
 	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
 	val trackerConfig by vm.manager.trackerConfig.collectAsStateWithLifecycle()
 	val weatherLoading by vm.weatherLoading.collectAsStateWithLifecycle()
@@ -234,12 +238,19 @@ fun TrainingScreen(
 
 	if (state is TrainingViewModel.State.InProgress) {
 		Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
+			val isConnected = connectionState is ConnectionState.Connected
+			val isRunActive = runState is TrackerManager.State.InProgress
 			TrainingController(
-				isConnected = connectionState is ConnectionState.Connected,
+				isConnected = isConnected,
+				isRunActive = isRunActive,
 				trackerConfig = trackerConfig,
 				finishTimeoutFlow = vm.manager.finishTimeout,
-				onConnectClick = {
-					mainVm.navigate(NavTarget.Home)
+				onFabClick = {
+					when {
+						!isConnected -> mainVm.navigate(NavTarget.Home)
+						isRunActive -> mainVm.forceRunDialog.update { true }
+						else -> vm.sendCommand(TrackerCommand.start())
+					}
 				},
 				onCommand = vm::sendCommand,
 			)

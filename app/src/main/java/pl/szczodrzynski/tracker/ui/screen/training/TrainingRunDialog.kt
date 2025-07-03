@@ -114,6 +114,7 @@ fun TrainingRunDialog(
 	athlete: Athlete?,
 	lastResult: TrackerResult? = null,
 	finishTimeout: Int = 0,
+	isForcedShow: Boolean = false,
 	onDismiss: () -> Unit = {},
 	onDescription: (value: String) -> Unit = {},
 ) {
@@ -139,14 +140,14 @@ fun TrainingRunDialog(
 
 	AlertDialog(
 		onDismissRequest = {
-			if (trainingRun.isFinished)
+			if (trainingRun.isFinished || isForcedShow)
 				onDismiss()
 		},
 		confirmButton = {
 			TextButton(
 				onClick = onDismiss,
 			) {
-				if (trainingRun.isFinished)
+				if (trainingRun.isFinished || isForcedShow)
 					Text(stringResource(R.string.training_run_close))
 				else
 					Text(stringResource(R.string.training_run_finish))
@@ -189,7 +190,7 @@ private fun LazyListScope.trainingRunDialogContent(
 			val textRes = when (lastResult?.type) {
 				TrackerResult.Type.ON_YOUR_MARKS -> R.string.training_run_state_on_your_marks
 				TrackerResult.Type.READY -> R.string.training_run_state_ready
-				TrackerResult.Type.START -> R.string.training_run_state_start
+				TrackerResult.Type.START -> if (!trainingRun.isFlyingTest) R.string.training_run_state_start else null
 				else -> null
 			}
 			if (textRes == null)
@@ -209,7 +210,7 @@ private fun LazyListScope.trainingRunDialogContent(
 	}
 
 	val firstTimestamp = splits.firstOrNull()?.timestamp ?: 0
-	var indexDecrement = 0
+	val indexOffset = splits.count { it.type != TrainingRunSplit.Type.SPLIT }
 	itemsIndexed(splits, key = { _, split -> split.timestamp }) { index, split ->
 		val timestamp = if (trainingRun.isFlyingTest)
 			split.timestamp - firstTimestamp
@@ -223,7 +224,7 @@ private fun LazyListScope.trainingRunDialogContent(
 				.padding(vertical = 4.dp)
 			if (split.type == TrainingRunSplit.Type.SPLIT) {
 				Text(
-					text = "${index + 1 - indexDecrement}",
+					text = "${index + 1 - indexOffset}",
 					modifier = Modifier.width(36.dp),
 					textAlign = TextAlign.Center,
 					style = MaterialTheme.typography.headlineMedium,
@@ -241,7 +242,6 @@ private fun LazyListScope.trainingRunDialogContent(
 					)
 				}
 			} else {
-				indexDecrement++
 				Iconics(
 					icon = CommunityMaterial.Icon2.cmd_hand_wave_outline,
 					size = 36.dp,

@@ -72,9 +72,10 @@ private fun PreviewDisconnected() {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun ColumnScope.TrainingController(
 	isConnected: Boolean = true,
+	isRunActive: Boolean = false,
 	trackerConfig: TrackerConfig = TrackerConfig(),
 	finishTimeoutFlow: MutableStateFlow<Int> = MutableStateFlow(0),
-	onConnectClick: () -> Unit = {},
+	onFabClick: () -> Unit = {},
 	onCommand: (command: TrackerCommand) -> Unit = {},
 ) {
 	SensorErrorSnackbar(
@@ -110,22 +111,19 @@ fun ColumnScope.TrainingController(
 
 		Spacer(modifier = Modifier.width(8.dp))
 		FloatingActionButton(
-			onClick = {
-				if (isConnected)
-					onCommand(TrackerCommand.start())
-				else
-					onConnectClick()
+			onClick = onFabClick,
+			containerColor = when {
+				!isConnected -> MaterialTheme.colorScheme.secondaryContainer
+				isRunActive -> MaterialTheme.colorScheme.secondaryContainer
+				else -> MaterialTheme.colorScheme.primary
 			},
-			containerColor = if (isConnected)
-				MaterialTheme.colorScheme.primary
-			else
-				MaterialTheme.colorScheme.secondaryContainer,
 		) {
 			Iconics(
-				if (isConnected)
-					CommunityMaterial.Icon3.cmd_play_outline
-				else
-					CommunityMaterial.Icon.cmd_connection
+				when {
+					!isConnected -> CommunityMaterial.Icon.cmd_connection
+					isRunActive -> CommunityMaterial.Icon3.cmd_open_in_new
+					else -> CommunityMaterial.Icon3.cmd_play_outline
+				}
 			)
 		}
 	}

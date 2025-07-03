@@ -38,6 +38,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
+import kotlinx.coroutines.flow.update
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.manager.SyncManager
 import pl.szczodrzynski.tracker.manager.TrackerManager
@@ -92,9 +93,11 @@ fun MainScaffold() {
 
 	val training by mainVm.manager.training.collectAsStateWithLifecycle()
 	val runState by mainVm.manager.runState.collectAsStateWithLifecycle()
+	val forceRunDialog by mainVm.forceRunDialog.collectAsStateWithLifecycle()
 
 	(runState as? TrackerManager.State.InProgress)?.let { state ->
-		if (state.trainingRun.isFlyingTest && state.splits.isEmpty())
+		val isHiddenByMode = state.trainingRun.isFlyingTest && state.splits.isEmpty()
+		if (isHiddenByMode && !forceRunDialog)
 			return@let
 		TrainingRunDialog(
 			trainingRun = state.trainingRun,
@@ -102,8 +105,11 @@ fun MainScaffold() {
 			athlete = state.athlete,
 			lastResult = state.lastResult,
 			finishTimeout = state.finishTimeout,
+			isForcedShow = isHiddenByMode,
 			onDismiss = {
-				mainVm.manager.finishCurrentRun()
+				mainVm.forceRunDialog.update { false }
+				if (!isHiddenByMode)
+					mainVm.manager.finishRun()
 			},
 		)
 	}

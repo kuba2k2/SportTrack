@@ -31,7 +31,7 @@ class TrackerManager @Inject constructor(
 
 	override val coroutineContext = Job() + Dispatchers.IO
 
-	private val connection = TrackerConnection(::saveResult)
+	private val connection = TrackerConnection(::onConfig, ::onResult)
 	val trackerConfig = connection.trackerConfig
 
 	val training = appDb.trainingDao.getLatest()
@@ -69,7 +69,13 @@ class TrackerManager @Inject constructor(
 	var finishTimeout = MutableStateFlow(20000)
 	var athlete = MutableStateFlow<Athlete?>(null)
 
-	suspend fun saveResult(result: TrackerResult) = withContext(Dispatchers.IO) {
+	fun onConfig(oldConfig: TrackerConfig, newConfig: TrackerConfig) {
+		// restart the device if mode changes
+		if (oldConfig.mode != newConfig.mode)
+			finishRun()
+	}
+
+	suspend fun onResult(result: TrackerResult) = withContext(Dispatchers.IO) {
 		Timber.d("Received result: $result")
 		val training = training.value ?: return@withContext
 
@@ -141,10 +147,10 @@ class TrackerManager @Inject constructor(
 	private fun launchTimeout() = launch(Dispatchers.IO) {
 		delay(finishTimeout.value.toLong())
 		Timber.d("Finishing run $trainingRun")
-		finishRun()
+		finishRunSuspend()
 	}
 
-	private suspend fun finishRun() {
+	private suspend fun finishRunSuspend() {
 		// save the finished run to database
 		trainingRun?.copy(isFinished = true)?.let {
 			appDb.trainingRunDao.update(it)
@@ -165,7 +171,7 @@ class TrackerManager @Inject constructor(
 		trainingRunTimeout?.cancel()
 	}
 
-	fun finishCurrentRun() = launch(Dispatchers.IO) {
-		finishRun()
+	fun finishRun() = launch(Dispatchers.IO) {
+		finishRunSuspend()
 	}
 }

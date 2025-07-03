@@ -23,6 +23,7 @@ import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 class TrackerConnection(
+	private val onConfig: suspend (oldConfig: TrackerConfig, newConfig: TrackerConfig) -> Unit,
 	private val onResult: suspend (result: TrackerResult) -> Unit,
 ) : CoroutineScope {
 
@@ -68,9 +69,12 @@ class TrackerConnection(
 						val value = line.substring(2)
 						// update and emit the new device config
 						try {
-							val newConfig = trackerConfig.value.update(commandType, value)
+							val oldConfig = trackerConfig.value
+							val newConfig = oldConfig.update(commandType, value)
 							_trackerConfig.update { newConfig }
 							Timber.d("Configuration updated: $newConfig")
+							// send the config to manager
+							onConfig(oldConfig, newConfig)
 						} catch (e: Exception) {
 							Timber.w(e, "Failed to parse line '$line'")
 						}
