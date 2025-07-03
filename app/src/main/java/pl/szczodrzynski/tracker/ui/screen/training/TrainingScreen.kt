@@ -39,6 +39,7 @@ import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.components.EditTextDialog
 import pl.szczodrzynski.tracker.ui.components.FullscreenLoadingIndicator
+import pl.szczodrzynski.tracker.ui.components.IconTextRow
 import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
@@ -46,6 +47,7 @@ import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingController
 import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingMap
 import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataUpdater
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -156,14 +158,27 @@ fun TrainingScreen(
 	LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		item(key = "title") {
 			Row(verticalAlignment = Alignment.CenterVertically) {
-				Text(
-					training.title,
+				Column(
 					modifier = Modifier
 						.padding(horizontal = 16.dp)
 						.padding(top = 16.dp)
 						.weight(1.0f),
-					style = MaterialTheme.typography.headlineMedium,
-				)
+				) {
+					Text(
+						training.title,
+						style = MaterialTheme.typography.headlineMedium,
+					)
+					IconTextRow(
+						icon = CommunityMaterial.Icon.cmd_calendar_outline,
+						text = training.dateTime.atZone(ZoneId.systemDefault())
+							.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)),
+					)
+					IconTextRow(
+						icon = CommunityMaterial.Icon3.cmd_map_marker_outline,
+						text = training.locationName ?: stringResource(R.string.history_no_location),
+					)
+				}
+
 				IconButton(
 					onClick = {
 						titleDialogShown = true

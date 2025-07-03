@@ -2,7 +2,6 @@ package pl.szczodrzynski.tracker.ui.screen.history
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -15,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,7 +25,8 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.entity.Training
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.components.FullscreenLoadingIndicator
-import pl.szczodrzynski.tracker.ui.components.Iconics
+import pl.szczodrzynski.tracker.ui.components.IconTextRow
+import pl.szczodrzynski.tracker.ui.components.TitleIconTextRow
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
@@ -115,43 +114,20 @@ private fun HistoryList(
 				Column(
 					modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
 				) {
-					Row(verticalAlignment = Alignment.CenterVertically) {
-						Text(
-							training.title,
-							modifier = Modifier.weight(1.0f),
-							style = MaterialTheme.typography.titleLarge,
-						)
-						Text(
-							localDateTime.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
-							color = MaterialTheme.colorScheme.onSurfaceVariant,
-						)
-					}
-					Row(verticalAlignment = Alignment.CenterVertically) {
-						Iconics(CommunityMaterial.Icon3.cmd_map_marker_outline, size = 16.dp)
-						Text(
-							training.locationName ?: stringResource(R.string.history_no_location),
-							modifier = Modifier
-								.padding(start = 4.dp)
-								.weight(1.0f),
-							color = MaterialTheme.colorScheme.onSurfaceVariant,
-							maxLines = 1,
-						)
-						Text(
-							localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-							color = MaterialTheme.colorScheme.onSurfaceVariant,
-						)
-					}
-					Row(verticalAlignment = Alignment.CenterVertically) {
-						Iconics(CommunityMaterial.Icon3.cmd_text, size = 16.dp)
-						Text(
-							training.description ?: stringResource(R.string.history_no_description),
-							modifier = Modifier
-								.padding(start = 4.dp)
-								.weight(1.0f),
-							color = MaterialTheme.colorScheme.onSurfaceVariant,
-							maxLines = 3,
-						)
-					}
+					TitleIconTextRow(
+						text = training.title,
+						extraText = localDateTime.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
+					)
+					IconTextRow(
+						icon = CommunityMaterial.Icon3.cmd_map_marker_outline,
+						text = training.locationName ?: stringResource(R.string.history_no_location),
+						extraText = localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+					)
+					IconTextRow(
+						icon = CommunityMaterial.Icon3.cmd_text,
+						text = training.description ?: stringResource(R.string.history_no_description),
+						maxLines = 2,
+					)
 				}
 			}
 		}

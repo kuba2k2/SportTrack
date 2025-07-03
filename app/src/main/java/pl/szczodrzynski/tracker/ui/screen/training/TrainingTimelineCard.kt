@@ -2,17 +2,13 @@ package pl.szczodrzynski.tracker.ui.screen.training
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,7 +20,9 @@ import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingRunFull
-import pl.szczodrzynski.tracker.ui.components.Iconics
+import pl.szczodrzynski.tracker.ui.components.IconTextRow
+import pl.szczodrzynski.tracker.ui.components.MultiIconTextRow
+import pl.szczodrzynski.tracker.ui.components.TitleIconTextRow
 import pl.szczodrzynski.tracker.ui.components.roundTime
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import java.time.ZoneId
@@ -106,58 +104,35 @@ private fun TrainingRunCard(
 ) {
 	val localDateTime = trainingRunFull.run.dateTime.atZone(ZoneId.systemDefault())
 
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		Iconics(
-			if (trainingRunFull.run.isFlyingTest)
-				CommunityMaterial.Icon.cmd_clock_end
-			else
-				CommunityMaterial.Icon.cmd_bullhorn_outline,
-			size = 24.dp,
-		)
-		Text(
-			if (trainingRunFull.run.isFlyingTest)
-				stringResource(R.string.training_config_flying_start)
-			else
-				stringResource(R.string.training_config_start_on_signal),
-			modifier = Modifier
-				.weight(1.0f)
-				.padding(start = 8.dp),
-			style = MaterialTheme.typography.titleLarge,
-		)
-		Text(
-			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-	}
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		var splitCount = trainingRunFull.splits.count()
-		if (trainingRunFull.run.isFlyingTest)
-			splitCount--
-		Iconics(CommunityMaterial.Icon3.cmd_timer_outline, size = 16.dp)
-		Text(
-			stringResource(
-				R.string.training_timeline_result_count,
-				splitCount,
-				trainingRunFull.getTotalTime().toFloat().roundTime(),
-			),
-			modifier = Modifier
-				.padding(start = 4.dp)
-				.weight(1.0f),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-			maxLines = 1,
-		)
-	}
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		Iconics(CommunityMaterial.Icon3.cmd_text, size = 16.dp)
-		Text(
-			trainingRunFull.run.description ?: stringResource(R.string.history_no_description),
-			modifier = Modifier
-				.padding(start = 4.dp)
-				.weight(1.0f),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-			maxLines = 3,
-		)
-	}
+	TitleIconTextRow(
+		icon = if (trainingRunFull.run.isFlyingTest)
+			CommunityMaterial.Icon.cmd_clock_end
+		else
+			CommunityMaterial.Icon.cmd_bullhorn_outline,
+		text = if (trainingRunFull.run.isFlyingTest)
+			stringResource(R.string.training_config_flying_start)
+		else
+			stringResource(R.string.training_config_start_on_signal),
+		extraText = localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+	)
+
+	var splitCount = trainingRunFull.splits.count()
+	if (trainingRunFull.run.isFlyingTest)
+		splitCount--
+	IconTextRow(
+		icon = CommunityMaterial.Icon3.cmd_timer_outline,
+		text = stringResource(
+			R.string.training_timeline_result_count,
+			splitCount,
+			trainingRunFull.getTotalTime().toFloat().roundTime(),
+		),
+	)
+
+	IconTextRow(
+		icon = CommunityMaterial.Icon3.cmd_text,
+		text = trainingRunFull.run.description ?: stringResource(R.string.history_no_description),
+		maxLines = 2,
+	)
 }
 
 @Composable
@@ -166,20 +141,12 @@ private fun TrainingCommentCard(
 ) {
 	val localDateTime = trainingComment.dateTime.atZone(ZoneId.systemDefault())
 
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		Iconics(CommunityMaterial.Icon3.cmd_text, size = 16.dp)
-		Text(
-			trainingComment.comment,
-			modifier = Modifier
-				.padding(start = 4.dp)
-				.weight(1.0f),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-		Text(
-			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-	}
+	TitleIconTextRow(
+		icon = CommunityMaterial.Icon3.cmd_text,
+		text = trainingComment.comment,
+		extraText = localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+		maxLines = 2,
+	)
 }
 
 @Composable
@@ -188,62 +155,35 @@ private fun TrainingWeatherCard(
 ) {
 	val localDateTime = trainingWeather.dateTime.atZone(ZoneId.systemDefault())
 
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		Iconics(CommunityMaterial.Icon3.cmd_weather_partly_cloudy, size = 16.dp)
-		Text(
-			listOfNotNull(
-				trainingWeather.weather,
-				trainingWeather.temperature?.let { stringResource(R.string.weather_temperature_format, it) },
-				trainingWeather.apparentTemperature?.let {
-					stringResource(
-						R.string.weather_temperature_apparent_format,
-						it
-					)
-				},
-			).joinToString(),
-			modifier = Modifier
-				.padding(start = 4.dp)
-				.weight(1.0f),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-		Text(
-			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-	}
+	TitleIconTextRow(
+		icon = CommunityMaterial.Icon3.cmd_weather_partly_cloudy,
+		text = listOfNotNull(
+			trainingWeather.weather,
+			trainingWeather.temperature?.let { stringResource(R.string.weather_temperature_format, it) },
+		).joinToString(),
+	)
 
-	Row(verticalAlignment = Alignment.CenterVertically) {
-		if (trainingWeather.windSpeed != null) {
-			Iconics(CommunityMaterial.Icon3.cmd_weather_windy, size = 16.dp)
-			Text(
-				"${trainingWeather.windSpeed} km/h ${trainingWeather.windDirection}",
-				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-			)
-		}
-		if (trainingWeather.humidity != null) {
-			Iconics(CommunityMaterial.Icon.cmd_cloud_percent_outline, size = 16.dp)
-			Text(
-				"${trainingWeather.humidity}%",
-				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-			)
-		}
-		if (trainingWeather.precipitation != null) {
-			Iconics(CommunityMaterial.Icon3.cmd_weather_pouring, size = 16.dp)
-			Text(
-				trainingWeather.precipitation,
-				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-			)
-		}
-		if (trainingWeather.pressure != null) {
-			Iconics(CommunityMaterial.Icon.cmd_arrow_collapse, size = 16.dp)
-			Text(
-				"${trainingWeather.pressure} hPa",
-				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-			)
-		}
-	}
+	IconTextRow(
+		icon = CommunityMaterial.Icon3.cmd_thermometer,
+		text = trainingWeather.apparentTemperature?.let {
+			stringResource(R.string.weather_temperature_apparent_format, it)
+		},
+		extraText = localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+	)
+
+	MultiIconTextRow(
+		CommunityMaterial.Icon3.cmd_weather_windy to trainingWeather.windSpeed?.let {
+			"${trainingWeather.windSpeed} km/h ${trainingWeather.windDirection}"
+		},
+		CommunityMaterial.Icon.cmd_arrow_collapse to trainingWeather.pressure?.let {
+			"${trainingWeather.pressure} hPa"
+		},
+	)
+
+	MultiIconTextRow(
+		CommunityMaterial.Icon3.cmd_weather_pouring to trainingWeather.precipitation,
+		CommunityMaterial.Icon.cmd_cloud_percent_outline to trainingWeather.humidity?.let {
+			"${trainingWeather.humidity}%"
+		},
+	)
 }
