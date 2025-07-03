@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
@@ -54,6 +56,7 @@ private fun PreviewStartOnSignal() {
 				isFlyingTest = false,
 			),
 			splits = listOf(
+				TrainingRunSplit(trainingRunId = 0, timestamp = 119, type = TrainingRunSplit.Type.REACTION_BTN),
 				TrainingRunSplit(trainingRunId = 0, timestamp = 1234),
 				TrainingRunSplit(trainingRunId = 0, timestamp = 2678),
 				TrainingRunSplit(trainingRunId = 0, timestamp = 4096),
@@ -201,38 +204,60 @@ private fun LazyListScope.trainingRunDialogContent(
 	}
 
 	val firstTimestamp = trainingRun.splits.firstOrNull()?.timestamp ?: 0
-	val timestamps = trainingRun.splits.map {
-		if (trainingRun.run.isFlyingTest)
-			it.timestamp - firstTimestamp
+	var indexDecrement = 0
+	itemsIndexed(trainingRun.splits, key = { _, split -> split.timestamp }) { index, split ->
+		val timestamp = if (trainingRun.run.isFlyingTest)
+			split.timestamp - firstTimestamp
 		else
-			it.timestamp
-	}
-	itemsIndexed(timestamps, key = { _, timestamp -> timestamp }) { index, timestamp ->
+			split.timestamp
+
 		Row(verticalAlignment = Alignment.CenterVertically) {
-			Text(
-				text = "${index + 1}",
-				modifier = Modifier
-					.padding(vertical = 4.dp)
-					.padding(end = 24.dp),
-				textAlign = TextAlign.Center,
-				style = MaterialTheme.typography.headlineMedium,
-			)
-			Text(
-				text = stringResource(
-					R.string.seconds_format,
-					timestamp.toFloat().roundTimeUp(),
-				),
-				modifier = Modifier.weight(1.0f),
-				style = MaterialTheme.typography.headlineSmall,
-			)
-			if (trainingRun.run.isFlyingTest && index > 1 || !trainingRun.run.isFlyingTest && index > 0)
+			val timeModifier = Modifier
+				.weight(1.0f)
+				.padding(start = 8.dp)
+				.padding(vertical = 4.dp)
+			if (split.type == TrainingRunSplit.Type.SPLIT) {
 				Text(
-					text = stringResource(
-						R.string.seconds_format_plus,
-						(timestamp - timestamps[index - 1]).toFloat().roundTime(),
-					),
-					style = MaterialTheme.typography.titleLarge,
+					text = "${index + 1 - indexDecrement}",
+					modifier = Modifier.width(36.dp),
+					textAlign = TextAlign.Center,
+					style = MaterialTheme.typography.headlineMedium,
 				)
+				Text(
+					text = stringResource(R.string.seconds_format, timestamp.toFloat().roundTimeUp()),
+					modifier = timeModifier,
+					style = MaterialTheme.typography.headlineSmall,
+				)
+				if (trainingRun.run.isFlyingTest && index > 1 || !trainingRun.run.isFlyingTest && index > 0) {
+					val timeSinceLast = split.timestamp - trainingRun.splits[index - 1].timestamp
+					Text(
+						text = stringResource(R.string.seconds_format_plus, timeSinceLast.toFloat().roundTime()),
+						style = MaterialTheme.typography.titleLarge,
+					)
+				}
+			} else {
+				indexDecrement++
+				Iconics(
+					icon = CommunityMaterial.Icon2.cmd_hand_wave_outline,
+					size = 36.dp,
+					modifier = Modifier.padding(8.dp),
+				)
+				Text(
+					text = when (split.type) {
+						TrainingRunSplit.Type.REACTION_BTN -> stringResource(R.string.training_run_reaction_button)
+						TrainingRunSplit.Type.REACTION_OPT -> stringResource(R.string.training_run_reaction_optical)
+						else -> ""
+					},
+					style = MaterialTheme.typography.bodySmall,
+					textAlign = TextAlign.Center,
+					lineHeight = 12.sp,
+				)
+				Text(
+					text = stringResource(R.string.milliseconds_format, timestamp),
+					modifier = timeModifier,
+					style = MaterialTheme.typography.headlineSmall,
+				)
+			}
 		}
 	}
 
