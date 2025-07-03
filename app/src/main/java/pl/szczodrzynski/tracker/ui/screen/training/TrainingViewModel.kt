@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
+import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
@@ -134,5 +135,18 @@ class TrainingViewModel @Inject constructor(
 
 	fun sendCommand(command: TrackerCommand) = viewModelScope.launch {
 		manager.sendCommand(command)
+	}
+
+	fun saveTitle(value: String) = viewModelScope.launch {
+		val newTraining = training.training.copy(title = value)
+		appDb.trainingDao.update(newTraining)
+	}
+
+	fun saveComment(comment: TrainingComment, value: String) = viewModelScope.launch {
+		val newComment = comment.copy(comment = value)
+		if (comment.id == 0)
+			appDb.trainingCommentDao.insert(newComment)
+		else
+			appDb.trainingCommentDao.update(newComment)
 	}
 }

@@ -110,7 +110,7 @@ private fun HistoryList(
 				},
 				modifier = Modifier
 					.fillParentMaxWidth()
-					.padding(horizontal = 8.dp),
+					.padding(horizontal = 16.dp),
 			) {
 				Column(
 					modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

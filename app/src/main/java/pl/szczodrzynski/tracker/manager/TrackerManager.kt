@@ -82,7 +82,8 @@ class TrackerManager @Inject constructor(
 			appDb.trainingRunDao.setAllFinished()
 			val newRun = TrainingRun(
 				trainingId = training.id,
-				title = "",
+				// TODO use string resources
+				title = "Bieg na ${totalDistance.value / 100} m",
 				totalDistance = totalDistance.value,
 				sensorDistance = sensorDistance.value,
 				isFlyingTest = result.mode == TrackerConfig.Mode.FLYING_START,

@@ -70,7 +70,7 @@ fun TrainingMap(
 ) {
 	Column(
 		modifier = modifier
-			.padding(16.dp)
+			.padding(horizontal = 16.dp, vertical = 8.dp)
 			.fillMaxWidth()
 			.height(200.dp)
 			.clip(RoundedCornerShape(16.dp))

@@ -21,4 +21,12 @@ data class TrainingRunFull(
 		entityColumn = "id",
 	)
 	val athlete: Athlete?,
-)
+) {
+
+	fun getTotalTime(): Int {
+		splits ?: return 0
+		val firstTimestamp = splits.firstOrNull()?.timestamp ?: 0
+		val lastTimestamp = splits.lastOrNull()?.timestamp ?: 0
+		return lastTimestamp - firstTimestamp
+	}
+}

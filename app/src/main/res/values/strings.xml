@@ -87,4 +87,7 @@
 	<string name="training_run_state_start">Start!</string>
 	<string name="seconds_format">%.02f s</string>
 	<string name="seconds_format_plus">+%.02f s</string>
+	<string name="training_timeline_result_count">Pomiary: %d - Czas: %.02f s </string>
+	<string name="training_timeline">Oś czasu</string>
+	<string name="training_edit_comment_title">Edytuj komentarz</string>
 </resources>
