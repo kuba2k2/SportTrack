@@ -263,7 +263,6 @@ private fun ConfigBarItems(
 				}
 			},
 			onClick = {
-				settingsMenuOpened = false
 				onConfigCommand(TrackerCommand.sensorBeep(!trackerConfig.sensorBeep))
 			},
 			leadingIcon = {
