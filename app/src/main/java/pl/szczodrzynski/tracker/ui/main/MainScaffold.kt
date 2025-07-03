@@ -49,6 +49,7 @@ import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingRunDialog
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
+import timber.log.Timber
 
 @Composable
 @Preview
@@ -93,7 +94,8 @@ fun MainScaffold() {
 	val trainingRun by mainVm.manager.currentRun.collectAsStateWithLifecycle(null)
 	val lastResult by mainVm.manager.lastResult.collectAsStateWithLifecycle()
 
-	if (training != null && mainVm.manager.isStarted) {
+	Timber.d("Current run: $trainingRun")
+	if (training != null && trainingRun != null && mainVm.manager.isStarted) {
 		trainingRun?.let {
 			TrainingRunDialog(
 				trainingRun = it,

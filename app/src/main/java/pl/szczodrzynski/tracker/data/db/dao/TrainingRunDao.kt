@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
@@ -25,6 +26,7 @@ interface TrainingRunDao {
 	@Query("UPDATE trainingRun SET isFinished = 1")
 	suspend fun setAllFinished()
 
+	@Transaction
 	@Query("SELECT * FROM trainingRun WHERE isFinished = 0 ORDER BY dateTime DESC LIMIT 1")
 	fun getCurrentFull(): Flow<TrainingRunFull?>
 
