@@ -1,7 +1,8 @@
 package pl.szczodrzynski.tracker.ui.screen.training
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -113,6 +114,23 @@ fun TrainingRunDialog(
 	onDismiss: () -> Unit = {},
 	onDescription: (value: String) -> Unit = {},
 ) {
+	val progressTimeout =
+		finishTimeout.takeIf { it != 0 && trainingRun.splits.isNotEmpty() }
+			?: lastResult?.millis
+	val progressValue = remember { Animatable(0.0f) }
+
+	if (!trainingRun.run.isFinished && progressTimeout != null)
+		LaunchedEffect(lastResult, trainingRun) {
+			progressValue.snapTo(0.0f)
+			progressValue.animateTo(
+				targetValue = 1.0f,
+				animationSpec = tween(
+					durationMillis = progressTimeout,
+					easing = LinearEasing,
+				),
+			)
+		}
+
 	AlertDialog(
 		onDismissRequest = {
 			if (trainingRun.run.isFinished)
@@ -139,21 +157,26 @@ fun TrainingRunDialog(
 		},
 		text = {
 			LazyColumn {
-				TrainingRunDialogContent(trainingRun, lastResult, finishTimeout, onDescription)
+				trainingRunDialogContent(
+					trainingRun = trainingRun,
+					lastResult = lastResult,
+					progressTimeout = progressTimeout,
+					progressValue = progressValue,
+					onDescription = onDescription,
+				)
 			}
 		},
 	)
 }
 
-private fun LazyListScope.TrainingRunDialogContent(
+private fun LazyListScope.trainingRunDialogContent(
 	trainingRun: TrainingRunFull,
 	lastResult: TrackerResult?,
-	finishTimeout: Int,
+	progressTimeout: Int?,
+	progressValue: Animatable<Float, AnimationVector1D>,
 	onDescription: (value: String) -> Unit,
 ) {
-	val splits = trainingRun.splits ?: listOf()
-
-	if (splits.isEmpty()) {
+	if (trainingRun.splits.isEmpty()) {
 		item(key = "state") {
 			val textRes = when (lastResult?.type) {
 				TrackerResult.Type.ON_YOUR_MARKS -> R.string.training_run_state_on_your_marks
@@ -177,8 +200,8 @@ private fun LazyListScope.TrainingRunDialogContent(
 		}
 	}
 
-	val firstTimestamp = splits.firstOrNull()?.timestamp ?: 0
-	val timestamps = splits.map {
+	val firstTimestamp = trainingRun.splits.firstOrNull()?.timestamp ?: 0
+	val timestamps = trainingRun.splits.map {
 		if (trainingRun.run.isFlyingTest)
 			it.timestamp - firstTimestamp
 		else
@@ -213,26 +236,25 @@ private fun LazyListScope.TrainingRunDialogContent(
 		}
 	}
 
-	val progressTimeout = finishTimeout.takeIf { splits.isNotEmpty() } ?: lastResult?.millis
-	if (!trainingRun.run.isFinished && progressTimeout != null && progressTimeout != 0) {
+	if (!trainingRun.run.isFinished && progressTimeout != null) {
 		item(key = "progress") {
-			val progress = remember { Animatable(0.0f) }
 			LinearProgressIndicator(
-				progress = { progress.value },
+				progress = { progressValue.value },
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(top = 8.dp),
 			)
-			LaunchedEffect(lastResult, trainingRun) {
-				progress.snapTo(0.0f)
-				progress.animateTo(
-					targetValue = 1.0f,
-					animationSpec = tween(
-						durationMillis = progressTimeout,
-						easing = FastOutSlowInEasing,
-					),
-				)
-			}
+			Text(
+				text = stringResource(
+					R.string.seconds_format_single,
+					(progressTimeout * (1.0f - progressValue.value)).roundTimeUp(),
+				),
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 4.dp),
+				textAlign = TextAlign.Center,
+				style = MaterialTheme.typography.titleMedium,
+			)
 		}
 	}
 
