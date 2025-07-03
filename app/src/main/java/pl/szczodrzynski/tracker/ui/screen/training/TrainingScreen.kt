@@ -94,9 +94,7 @@ fun TrainingScreen(
 		is TrainingViewModel.State.Finished -> localState.training
 	}
 	val training = trainingFull.training
-	val timeline = (trainingFull.runList.map { it.run.dateTime to it } +
-		trainingFull.commentList.map { it.dateTime to it } +
-		trainingFull.weatherList.map { it.dateTime to it }).sortedByDescending { it.first }
+	val timeline = trainingFull.getTimeline().sortedByDescending { it.first }
 
 	var locationInProgress by remember { mutableStateOf(false) }
 	var locationRetryCount by remember { mutableIntStateOf(0) }

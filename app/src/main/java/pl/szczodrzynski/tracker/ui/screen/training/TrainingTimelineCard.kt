@@ -121,7 +121,7 @@ private fun TrainingRunCard(
 				stringResource(R.string.training_config_start_on_signal),
 			modifier = Modifier
 				.weight(1.0f)
-				.padding(start = 4.dp),
+				.padding(start = 8.dp),
 			style = MaterialTheme.typography.titleLarge,
 		)
 		Text(
@@ -130,7 +130,7 @@ private fun TrainingRunCard(
 		)
 	}
 	Row(verticalAlignment = Alignment.CenterVertically) {
-		var splitCount = trainingRunFull.splits?.count() ?: 1
+		var splitCount = trainingRunFull.splits.count()
 		if (trainingRunFull.run.isFlyingTest)
 			splitCount--
 		Iconics(CommunityMaterial.Icon3.cmd_timer_outline, size = 16.dp)

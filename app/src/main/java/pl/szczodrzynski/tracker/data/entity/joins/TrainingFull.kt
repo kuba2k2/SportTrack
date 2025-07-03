@@ -6,6 +6,7 @@ import pl.szczodrzynski.tracker.data.entity.Training
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
+import java.time.Instant
 
 data class TrainingFull(
 	@Embedded
@@ -29,4 +30,10 @@ data class TrainingFull(
 		entityColumn = "trainingId",
 	)
 	val weatherList: List<TrainingWeather>,
-)
+) {
+
+	fun getTimeline(): List<Pair<Instant, Any>> =
+		runList.filter { it.splits.isNotEmpty() && it.run.isFinished }.map { it.run.dateTime to it } +
+			commentList.map { it.dateTime to it } +
+			weatherList.map { it.dateTime to it }
+}
