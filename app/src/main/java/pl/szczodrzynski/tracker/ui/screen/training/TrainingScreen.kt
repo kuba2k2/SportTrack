@@ -125,9 +125,9 @@ fun TrainingScreen(
 
 	trainingRunDialogItem?.let {
 		TrainingRunDialog(
-			trainingRun = it,
-			lastResult = null,
-			finishTimeout = mainVm.manager.finishTimeout.value,
+			trainingRun = it.run,
+			splits = it.splits,
+			athlete = it.athlete,
 			onDismiss = {
 				trainingRunDialogItem = null
 			},

@@ -7,15 +7,14 @@ data class TrackerResult(
 	val type: Type,
 	val millis: Int? = null,
 ) {
-	enum class Type(val char: Char, val hasParam: Boolean = false) {
+	enum class Type(val char: Char, val hasParam: Boolean = true) {
 		ON_YOUR_MARKS('M'),
 		READY('R'),
-		START('S'),
-		ERROR('E'), // unused - reaction test only
-		DELAY('D', hasParam = true),
-		SPLIT('L', hasParam = true),
-		REACTION_BTN('B', hasParam = true),
-		REACTION_OPT('O', hasParam = true),
+		START('S', hasParam = false),
+		ERROR('E', hasParam = false), // unused - reaction test only
+		SPLIT('L'),
+		REACTION_BTN('B'),
+		REACTION_OPT('O'),
 	}
 
 	companion object {

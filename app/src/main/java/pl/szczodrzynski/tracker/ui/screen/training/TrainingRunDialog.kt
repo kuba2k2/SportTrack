@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
+import pl.szczodrzynski.tracker.data.entity.Athlete
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
-import pl.szczodrzynski.tracker.data.entity.joins.TrainingRunFull
 import pl.szczodrzynski.tracker.service.data.TrackerConfig
 import pl.szczodrzynski.tracker.service.data.TrackerResult
 import pl.szczodrzynski.tracker.ui.components.EditTextDialog
@@ -47,25 +47,24 @@ import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 @Composable
 private fun PreviewStartOnSignal() {
 	SportTrackPreview {
-		val trainingRun = TrainingRunFull(
-			run = TrainingRun(
-				trainingId = 0,
-				title = "",
-				totalDistance = 0,
-				sensorDistance = listOf(),
-				isFlyingTest = false,
-			),
-			splits = listOf(
-				TrainingRunSplit(trainingRunId = 0, timestamp = 119, type = TrainingRunSplit.Type.REACTION_BTN),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 1234),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 2678),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 4096),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 5800),
-			),
-			athlete = null,
+		val trainingRun = TrainingRun(
+			trainingId = 0,
+			title = "",
+			totalDistance = 0,
+			sensorDistance = listOf(),
+			isFlyingTest = false,
+		)
+		val splits = listOf(
+			TrainingRunSplit(trainingRunId = 0, timestamp = 119, type = TrainingRunSplit.Type.REACTION_BTN),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 1234),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 2678),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 4096),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 5800),
 		)
 		TrainingRunDialog(
 			trainingRun = trainingRun,
+			splits = splits,
+			athlete = null,
 			lastResult = TrackerResult(
 				mode = TrackerConfig.Mode.START_ON_SIGNAL,
 				type = TrackerResult.Type.ON_YOUR_MARKS,
@@ -80,25 +79,24 @@ private fun PreviewStartOnSignal() {
 @Composable
 private fun PreviewFlyingStart() {
 	SportTrackPreview {
-		val trainingRun = TrainingRunFull(
-			run = TrainingRun(
-				trainingId = 0,
-				title = "",
-				totalDistance = 0,
-				sensorDistance = listOf(),
-				isFlyingTest = true,
-			),
-			splits = listOf(
-				TrainingRunSplit(trainingRunId = 0, timestamp = 10000),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 11234),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 12678),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 14096),
-				TrainingRunSplit(trainingRunId = 0, timestamp = 15800),
-			),
-			athlete = null,
+		val trainingRun = TrainingRun(
+			trainingId = 0,
+			title = "",
+			totalDistance = 0,
+			sensorDistance = listOf(),
+			isFlyingTest = true,
+		)
+		val splits = listOf(
+			TrainingRunSplit(trainingRunId = 0, timestamp = 10000),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 11234),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 12678),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 14096),
+			TrainingRunSplit(trainingRunId = 0, timestamp = 15800),
 		)
 		TrainingRunDialog(
 			trainingRun = trainingRun,
+			splits = splits,
+			athlete = null,
 			lastResult = TrackerResult(
 				mode = TrackerConfig.Mode.START_ON_SIGNAL,
 				type = TrackerResult.Type.ON_YOUR_MARKS,
@@ -111,18 +109,23 @@ private fun PreviewFlyingStart() {
 
 @Composable
 fun TrainingRunDialog(
-	trainingRun: TrainingRunFull,
-	lastResult: TrackerResult?,
-	finishTimeout: Int,
+	trainingRun: TrainingRun,
+	splits: List<TrainingRunSplit>,
+	athlete: Athlete?,
+	lastResult: TrackerResult? = null,
+	finishTimeout: Int = 0,
 	onDismiss: () -> Unit = {},
 	onDescription: (value: String) -> Unit = {},
 ) {
-	val progressTimeout =
-		finishTimeout.takeIf { it != 0 && trainingRun.splits.isNotEmpty() }
-			?: lastResult?.millis
+	val progressTimeout = when {
+		finishTimeout != 0 && splits.isNotEmpty() -> finishTimeout
+		lastResult?.type == TrackerResult.Type.ON_YOUR_MARKS -> lastResult.millis
+		lastResult?.type == TrackerResult.Type.READY -> lastResult.millis
+		else -> null
+	}
 	val progressValue = remember { Animatable(0.0f) }
 
-	if (!trainingRun.run.isFinished && progressTimeout != null)
+	if (!trainingRun.isFinished && progressTimeout != null)
 		LaunchedEffect(lastResult, trainingRun) {
 			progressValue.snapTo(0.0f)
 			progressValue.animateTo(
@@ -136,14 +139,14 @@ fun TrainingRunDialog(
 
 	AlertDialog(
 		onDismissRequest = {
-			if (trainingRun.run.isFinished)
+			if (trainingRun.isFinished)
 				onDismiss()
 		},
 		confirmButton = {
 			TextButton(
 				onClick = onDismiss,
 			) {
-				if (trainingRun.run.isFinished)
+				if (trainingRun.isFinished)
 					Text(stringResource(R.string.training_run_close))
 				else
 					Text(stringResource(R.string.training_run_finish))
@@ -153,7 +156,7 @@ fun TrainingRunDialog(
 			Iconics(CommunityMaterial.Icon3.cmd_run_fast)
 		},
 		title = {
-			when (trainingRun.run.isFlyingTest) {
+			when (trainingRun.isFlyingTest) {
 				false -> Text(stringResource(R.string.training_config_start_on_signal))
 				true -> Text(stringResource(R.string.training_config_flying_start))
 			}
@@ -162,6 +165,7 @@ fun TrainingRunDialog(
 			LazyColumn {
 				trainingRunDialogContent(
 					trainingRun = trainingRun,
+					splits = splits,
 					lastResult = lastResult,
 					progressTimeout = progressTimeout,
 					progressValue = progressValue,
@@ -173,13 +177,14 @@ fun TrainingRunDialog(
 }
 
 private fun LazyListScope.trainingRunDialogContent(
-	trainingRun: TrainingRunFull,
+	trainingRun: TrainingRun,
+	splits: List<TrainingRunSplit>,
 	lastResult: TrackerResult?,
 	progressTimeout: Int?,
 	progressValue: Animatable<Float, AnimationVector1D>,
 	onDescription: (value: String) -> Unit,
 ) {
-	if (trainingRun.splits.isEmpty()) {
+	if (splits.isEmpty()) {
 		item(key = "state") {
 			val textRes = when (lastResult?.type) {
 				TrackerResult.Type.ON_YOUR_MARKS -> R.string.training_run_state_on_your_marks
@@ -203,10 +208,10 @@ private fun LazyListScope.trainingRunDialogContent(
 		}
 	}
 
-	val firstTimestamp = trainingRun.splits.firstOrNull()?.timestamp ?: 0
+	val firstTimestamp = splits.firstOrNull()?.timestamp ?: 0
 	var indexDecrement = 0
-	itemsIndexed(trainingRun.splits, key = { _, split -> split.timestamp }) { index, split ->
-		val timestamp = if (trainingRun.run.isFlyingTest)
+	itemsIndexed(splits, key = { _, split -> split.timestamp }) { index, split ->
+		val timestamp = if (trainingRun.isFlyingTest)
 			split.timestamp - firstTimestamp
 		else
 			split.timestamp
@@ -228,8 +233,8 @@ private fun LazyListScope.trainingRunDialogContent(
 					modifier = timeModifier,
 					style = MaterialTheme.typography.headlineSmall,
 				)
-				if (trainingRun.run.isFlyingTest && index > 1 || !trainingRun.run.isFlyingTest && index > 0) {
-					val timeSinceLast = split.timestamp - trainingRun.splits[index - 1].timestamp
+				if (trainingRun.isFlyingTest && index > 1 || !trainingRun.isFlyingTest && index > 0) {
+					val timeSinceLast = split.timestamp - splits[index - 1].timestamp
 					Text(
 						text = stringResource(R.string.seconds_format_plus, timeSinceLast.toFloat().roundTime()),
 						style = MaterialTheme.typography.titleLarge,
@@ -261,7 +266,7 @@ private fun LazyListScope.trainingRunDialogContent(
 		}
 	}
 
-	if (!trainingRun.run.isFinished && progressTimeout != null) {
+	if (!trainingRun.isFinished && progressTimeout != null) {
 		item(key = "progress") {
 			LinearProgressIndicator(
 				progress = { progressValue.value },
@@ -283,13 +288,13 @@ private fun LazyListScope.trainingRunDialogContent(
 		}
 	}
 
-	if (trainingRun.run.isFinished) {
+	if (trainingRun.isFinished) {
 		item(key = "description") {
 			var dialogShown by remember { mutableStateOf(false) }
 
 			if (dialogShown) {
 				EditTextDialog(
-					initialText = trainingRun.run.description ?: "",
+					initialText = trainingRun.description ?: "",
 					onDismiss = { value ->
 						dialogShown = false
 						value ?: return@EditTextDialog
@@ -302,7 +307,7 @@ private fun LazyListScope.trainingRunDialogContent(
 			Row(verticalAlignment = Alignment.CenterVertically) {
 				Iconics(CommunityMaterial.Icon3.cmd_text, size = 16.dp)
 				Text(
-					trainingRun.run.description ?: stringResource(R.string.history_no_description),
+					trainingRun.description ?: stringResource(R.string.history_no_description),
 					modifier = Modifier
 						.padding(start = 4.dp)
 						.weight(1.0f),

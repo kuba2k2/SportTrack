@@ -42,22 +42,27 @@ class TrackerManager @Inject constructor(
 		}
 		.stateIn(scope = this, started = SharingStarted.Eagerly, initialValue = null)
 
-	val currentRun = appDb.trainingRunDao.getCurrentFull()
-
 	fun start(socket: BluetoothSocket) = connection.start(socket)
 	fun stop() = connection.stop()
 	suspend fun sendCommand(command: TrackerCommand) = connection.sendCommand(command)
 
-	private val _lastResult = MutableStateFlow<TrackerResult?>(null)
-	val lastResult = _lastResult.asStateFlow()
-
 	private var trainingRun: TrainingRun? = null
-	private var trainingRunHasSplits = false
+	private val trainingRunSplits: MutableList<TrainingRunSplit> = mutableListOf()
 	private var trainingRunTimeout: Job? = null
 
-	private var startedAutomatically = false
-	var isStarted = false
-		private set
+	sealed interface State {
+		data object Idle : State
+		data class InProgress(
+			val trainingRun: TrainingRun,
+			val splits: List<TrainingRunSplit>,
+			val athlete: Athlete?,
+			val lastResult: TrackerResult,
+			val finishTimeout: Int,
+		) : State
+	}
+
+	private val _state = MutableStateFlow<State>(State.Idle)
+	val runState = _state.asStateFlow()
 
 	var totalDistance = MutableStateFlow(10000)
 	var sensorDistance = MutableStateFlow(listOf(10, 10, 10))
@@ -72,10 +77,6 @@ class TrackerManager @Inject constructor(
 			result.mode == TrackerConfig.Mode.START_ON_SIGNAL && result.type == TrackerResult.Type.ON_YOUR_MARKS
 				|| result.mode == TrackerConfig.Mode.FLYING_START && result.type == TrackerResult.Type.START
 		val createNewRun = trainingRun == null || startCommand
-
-		if (!startCommand || !startedAutomatically)
-			isStarted = true
-		startedAutomatically = false
 
 		// create a new run if necessary
 		if (createNewRun) {
@@ -93,34 +94,48 @@ class TrackerManager @Inject constructor(
 			Timber.d("Creating run: $newRun")
 			val runId = appDb.trainingRunDao.insert(newRun).toInt()
 			trainingRun = newRun.copy(id = runId)
-			trainingRunHasSplits = false
+			trainingRunSplits.clear()
 		}
 		// cancel any previous timeouts
 		trainingRunTimeout?.cancel()
 
+		// under normal circumstances, this cannot be null at this point
+		val trainingRun = trainingRun ?: return@withContext
+
 		// insert the split if available already
-		val trainingRunId = trainingRun?.id
-		if (result.millis != null && result.type != TrackerResult.Type.DELAY && trainingRunId != null) {
-			val split = TrainingRunSplit(
-				trainingRunId = trainingRunId,
-				timestamp = result.millis,
-				type = when (result.type) {
-					TrackerResult.Type.REACTION_BTN -> TrainingRunSplit.Type.REACTION_BTN
-					TrackerResult.Type.REACTION_OPT -> TrainingRunSplit.Type.REACTION_OPT
-					else -> TrainingRunSplit.Type.SPLIT
-				},
-			)
-			Timber.d("Creating split: $split")
-			appDb.trainingRunSplitDao.insert(split)
-			trainingRunHasSplits = trainingRunHasSplits || split.type == TrainingRunSplit.Type.SPLIT
+		if (result.millis != null) {
+			when (result.type) {
+				TrackerResult.Type.SPLIT -> TrainingRunSplit.Type.SPLIT
+				TrackerResult.Type.REACTION_BTN -> TrainingRunSplit.Type.REACTION_BTN
+				TrackerResult.Type.REACTION_OPT -> TrainingRunSplit.Type.REACTION_OPT
+				else -> null
+			}?.let { splitType ->
+				val split = TrainingRunSplit(
+					trainingRunId = trainingRun.id,
+					timestamp = result.millis,
+					type = splitType,
+				)
+				Timber.d("Creating split: $split")
+				appDb.trainingRunSplitDao.insert(split)
+				trainingRunSplits.add(split)
+			}
 		}
 
 		// set a timeout if at least one split is already saved
-		if (trainingRunHasSplits && finishTimeout.value != 0) {
+		val hasActualSplit = trainingRunSplits.any { it.type == TrainingRunSplit.Type.SPLIT }
+		if (hasActualSplit && finishTimeout.value != 0) {
 			trainingRunTimeout = launchTimeout()
 		}
 
-		_lastResult.update { result }
+		_state.update {
+			State.InProgress(
+				trainingRun = trainingRun,
+				splits = trainingRunSplits,
+				athlete = athlete.value,
+				lastResult = result,
+				finishTimeout = finishTimeout.value,
+			)
+		}
 	}
 
 	private fun launchTimeout() = launch(Dispatchers.IO) {
@@ -129,22 +144,23 @@ class TrackerManager @Inject constructor(
 		finishRun()
 	}
 
-	private suspend fun finishRun(timeout: Boolean = false) {
+	private suspend fun finishRun() {
+		// save the finished run to database
 		trainingRun?.copy(isFinished = true)?.let {
 			appDb.trainingRunDao.update(it)
 		}
-		trainingRun = null
-		trainingRunHasSplits = false
-		isStarted = false
-		if (timeout && trackerConfig.value.mode == TrackerConfig.Mode.FLYING_START) {
-			startedAutomatically = true
-			sendCommand(TrackerCommand.start())
-		} else {
-			startedAutomatically = false
-			sendCommand(TrackerCommand.reset())
-		}
 		// remove empty runs
 		appDb.trainingRunDao.cleanupEmpty()
+		// clear run data
+		trainingRun = null
+		trainingRunSplits.clear()
+		// reset or restart the device
+		if (trackerConfig.value.mode == TrackerConfig.Mode.FLYING_START)
+			sendCommand(TrackerCommand.start())
+		else
+			sendCommand(TrackerCommand.reset())
+		// update the state
+		_state.update { State.Idle }
 		// cancel last, as finishRun() is ran from that same job
 		trainingRunTimeout?.cancel()
 	}

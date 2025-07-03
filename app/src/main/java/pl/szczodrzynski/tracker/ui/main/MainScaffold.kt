@@ -40,6 +40,7 @@ import coil3.compose.AsyncImage
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.manager.SyncManager
+import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.NavTarget.Companion.setPopUpTo
 import pl.szczodrzynski.tracker.ui.components.Iconics
@@ -49,7 +50,6 @@ import pl.szczodrzynski.tracker.ui.screen.home.HomeScreen
 import pl.szczodrzynski.tracker.ui.screen.login.LoginScreen
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingRunDialog
 import pl.szczodrzynski.tracker.ui.screen.training.TrainingScreen
-import timber.log.Timber
 
 @Composable
 @Preview
@@ -91,22 +91,21 @@ fun MainScaffold() {
 		?: mainVm.initialRoute
 
 	val training by mainVm.manager.training.collectAsStateWithLifecycle()
-	val trainingRun by mainVm.manager.currentRun.collectAsStateWithLifecycle(null)
-	val lastResult by mainVm.manager.lastResult.collectAsStateWithLifecycle()
+	val runState by mainVm.manager.runState.collectAsStateWithLifecycle()
 
-	Timber.d("Current run: $trainingRun")
-	if (training != null && trainingRun != null && mainVm.manager.isStarted) {
-		trainingRun?.let {
-			TrainingRunDialog(
-				trainingRun = it,
-				lastResult = lastResult,
-				finishTimeout = mainVm.manager.finishTimeout.value,
-				onDismiss = {
-					if (trainingRun?.run?.isFinished == false)
-						mainVm.manager.finishCurrentRun()
-				},
-			)
-		}
+	(runState as? TrackerManager.State.InProgress)?.let { state ->
+		if (state.trainingRun.isFlyingTest && state.splits.isEmpty())
+			return@let
+		TrainingRunDialog(
+			trainingRun = state.trainingRun,
+			splits = state.splits,
+			athlete = state.athlete,
+			lastResult = state.lastResult,
+			finishTimeout = state.finishTimeout,
+			onDismiss = {
+				mainVm.manager.finishCurrentRun()
+			},
+		)
 	}
 
 	Scaffold(
