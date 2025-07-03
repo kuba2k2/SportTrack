@@ -102,4 +102,10 @@
 	<string name="milliseconds_format">%d ms</string>
 	<string name="training_run_reaction_button">Czas reakcji:\n(przycisk)</string>
 	<string name="training_run_reaction_optical">Czas reakcji:\n(optyczny)</string>
+	<string name="training_run_click_to_delete">Naciśnij na wynik, aby go usunąć.</string>
+	<string name="training_run_delete_split_title">Usunąć wynik?</string>
+	<string name="delete">Usuń</string>
+	<string name="cancel">Anuluj</string>
+	<string name="training_run_delete_run_title">Usunąć cały bieg?</string>
+	<string name="training_run_delete_run_button">Usuń bieg</string>
 </resources>

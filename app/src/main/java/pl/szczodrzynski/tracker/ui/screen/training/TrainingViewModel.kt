@@ -17,6 +17,7 @@ import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.Training
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
+import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 import pl.szczodrzynski.tracker.data.network.openmeteo.WeatherService
@@ -186,6 +187,15 @@ class TrainingViewModel @Inject constructor(
 
 	fun saveRun(run: TrainingRun) = viewModelScope.launch {
 		appDb.trainingRunDao.update(run)
+	}
+
+	fun deleteRun(run: TrainingRun) = viewModelScope.launch {
+		appDb.trainingRunSplitDao.deleteAll(run.id)
+		appDb.trainingRunDao.delete(run)
+	}
+
+	fun deleteSplit(split: TrainingRunSplit) = viewModelScope.launch {
+		appDb.trainingRunSplitDao.delete(split)
 	}
 
 	fun fetchWeather() = viewModelScope.launch {

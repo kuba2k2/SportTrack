@@ -32,6 +32,8 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import kotlinx.coroutines.flow.update
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
+import pl.szczodrzynski.tracker.data.entity.TrainingRun
+import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingRunFull
 import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.data.ConnectionState
@@ -127,19 +129,33 @@ fun TrainingScreen(
 		)
 	}
 
-	trainingRunDialogItem?.let {
+	trainingRunDialogItem?.let { dialogItem ->
 		TrainingRunDialog(
-			trainingRun = it.run,
-			splits = it.splits,
-			athlete = it.athlete,
+			trainingRun = dialogItem.run,
+			splits = dialogItem.splits,
+			athlete = dialogItem.athlete,
 			onDismiss = {
 				trainingRunDialogItem = null
 			},
+			onDelete = { item ->
+				when (item) {
+					is TrainingRun -> {
+						vm.deleteRun(item)
+						trainingRunDialogItem = null
+					}
+
+					is TrainingRunSplit -> {
+						val newRun = dialogItem.copy(splits = dialogItem.splits.filterNot { it == item })
+						vm.deleteSplit(item)
+						trainingRunDialogItem = newRun
+					}
+				}
+			},
 			onDescription = { value ->
-				val newRun = it.copy(run = it.run.copy(description = value))
+				val newRun = dialogItem.copy(run = dialogItem.run.copy(description = value))
 				vm.saveRun(newRun.run)
 				trainingRunDialogItem = newRun
-			}
+			},
 		)
 	}
 

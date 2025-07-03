@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
 import pl.szczodrzynski.tracker.data.entity.TrainingRunSplit
 
@@ -18,4 +19,7 @@ interface TrainingRunSplitDao {
 
 	@Delete
 	suspend fun delete(trainingRunSplit: TrainingRunSplit)
+
+	@Query("DELETE FROM trainingRunSplit WHERE trainingRunId = :trainingRunId")
+	suspend fun deleteAll(trainingRunId: Int)
 }

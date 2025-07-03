@@ -4,14 +4,20 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +91,7 @@ private fun PreviewFlyingStart() {
 			totalDistance = 0,
 			sensorDistance = listOf(),
 			isFlyingTest = true,
+			isFinished = true,
 		)
 		val splits = listOf(
 			TrainingRunSplit(trainingRunId = 0, timestamp = 10000),
@@ -116,17 +123,20 @@ fun TrainingRunDialog(
 	finishTimeout: Int = 0,
 	isForcedShow: Boolean = false,
 	onDismiss: () -> Unit = {},
+	onDelete: (item: Any) -> Unit = {},
 	onDescription: (value: String) -> Unit = {},
 ) {
+	val hasActualSplit = splits.any { it.type == TrainingRunSplit.Type.SPLIT }
+
 	val progressTimeout = when {
-		finishTimeout != 0 && splits.isNotEmpty() -> finishTimeout
+		finishTimeout != 0 && hasActualSplit -> finishTimeout
 		lastResult?.type == TrackerResult.Type.ON_YOUR_MARKS -> lastResult.millis
 		lastResult?.type == TrackerResult.Type.READY -> lastResult.millis
 		else -> null
 	}
 	val progressValue = remember { Animatable(0.0f) }
 
-	if (!trainingRun.isFinished && progressTimeout != null)
+	if (!trainingRun.isFinished && progressTimeout != null) {
 		LaunchedEffect(lastResult, trainingRun) {
 			progressValue.snapTo(0.0f)
 			progressValue.animateTo(
@@ -137,6 +147,41 @@ fun TrainingRunDialog(
 				),
 			)
 		}
+	}
+
+	var deleteDialogItem by remember { mutableStateOf<Any?>(null) }
+	deleteDialogItem?.let {
+		AlertDialog(
+			onDismissRequest = {
+				deleteDialogItem = null
+			},
+			confirmButton = {
+				TextButton(
+					onClick = {
+						onDelete(it)
+						deleteDialogItem = null
+					},
+				) {
+					Text(stringResource(R.string.delete))
+				}
+			},
+			dismissButton = {
+				TextButton(
+					onClick = {
+						deleteDialogItem = null
+					},
+				) {
+					Text(stringResource(R.string.cancel))
+				}
+			},
+			title = {
+				when (it) {
+					is TrainingRun -> Text(stringResource(R.string.training_run_delete_run_title))
+					is TrainingRunSplit -> Text(stringResource(R.string.training_run_delete_split_title))
+				}
+			},
+		)
+	}
 
 	AlertDialog(
 		onDismissRequest = {
@@ -171,12 +216,16 @@ fun TrainingRunDialog(
 					progressTimeout = progressTimeout,
 					progressValue = progressValue,
 					onDescription = onDescription,
+					onDelete = {
+						deleteDialogItem = it
+					},
 				)
 			}
 		},
 	)
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun LazyListScope.trainingRunDialogContent(
 	trainingRun: TrainingRun,
 	splits: List<TrainingRunSplit>,
@@ -184,8 +233,11 @@ private fun LazyListScope.trainingRunDialogContent(
 	progressTimeout: Int?,
 	progressValue: Animatable<Float, AnimationVector1D>,
 	onDescription: (value: String) -> Unit,
+	onDelete: (item: Any) -> Unit,
 ) {
-	if (splits.isEmpty()) {
+	val hasActualSplit = splits.any { it.type == TrainingRunSplit.Type.SPLIT }
+
+	if (!hasActualSplit) {
 		item(key = "state") {
 			val textRes = when (lastResult?.type) {
 				TrackerResult.Type.ON_YOUR_MARKS -> R.string.training_run_state_on_your_marks
@@ -209,6 +261,17 @@ private fun LazyListScope.trainingRunDialogContent(
 		}
 	}
 
+	if (trainingRun.isFinished) {
+		item(key = "deleteHelp") {
+			Text(
+				stringResource(R.string.training_run_click_to_delete),
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(bottom = 16.dp),
+			)
+		}
+	}
+
 	val firstTimestamp = splits.firstOrNull()?.timestamp ?: 0
 	val indexOffset = splits.count { it.type != TrainingRunSplit.Type.SPLIT }
 	itemsIndexed(splits, key = { _, split -> split.timestamp }) { index, split ->
@@ -217,7 +280,17 @@ private fun LazyListScope.trainingRunDialogContent(
 		else
 			split.timestamp
 
-		Row(verticalAlignment = Alignment.CenterVertically) {
+		Row(
+			modifier = Modifier.clickable(
+				enabled = trainingRun.isFinished && split.type == TrainingRunSplit.Type.SPLIT,
+			) {
+				if (splits.count() == 1)
+					onDelete(trainingRun)
+				else
+					onDelete(split)
+			},
+			verticalAlignment = Alignment.CenterVertically,
+		) {
 			val timeModifier = Modifier
 				.weight(1.0f)
 				.padding(start = 8.dp)
@@ -319,6 +392,24 @@ private fun LazyListScope.trainingRunDialogContent(
 					},
 				) {
 					Iconics(CommunityMaterial.Icon.cmd_comment_text_outline)
+				}
+			}
+		}
+
+		item(key = "delete") {
+			Row(
+				modifier = Modifier.fillParentMaxWidth(),
+				horizontalArrangement = Arrangement.Center,
+			) {
+				TextButton(
+					onClick = {
+						onDelete(trainingRun)
+					},
+					shapes = ButtonDefaults.shapes(),
+				) {
+					Iconics(CommunityMaterial.Icon.cmd_delete_outline, size = ButtonDefaults.IconSize)
+					Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+					Text(stringResource(R.string.training_run_delete_run_button))
 				}
 			}
 		}
