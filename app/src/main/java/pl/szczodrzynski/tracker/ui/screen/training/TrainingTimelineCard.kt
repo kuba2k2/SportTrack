@@ -65,7 +65,7 @@ private fun Preview() {
 				apparentTemperature = 29.7f,
 				humidity = 50,
 				windDirection = "NE",
-				windSpeed = 4,
+				windSpeed = 4.4f,
 				pressure = 1021,
 			)
 		)

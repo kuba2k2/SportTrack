@@ -59,6 +59,7 @@ fun TrainingScreen(
 	val state by vm.state.collectAsStateWithLifecycle()
 	val connectionState by mainVm.connectionState.collectAsStateWithLifecycle()
 	val trackerConfig by vm.manager.trackerConfig.collectAsStateWithLifecycle()
+	val weatherLoading by vm.weatherLoading.collectAsStateWithLifecycle()
 
 	val trainingFull = when (val localState = state) {
 		is TrainingViewModel.State.Loading -> {
@@ -173,7 +174,16 @@ fun TrainingScreen(
 						.weight(1.0f),
 					style = MaterialTheme.typography.headlineSmall,
 				)
-				if (state is TrainingViewModel.State.InProgress)
+				if (state is TrainingViewModel.State.InProgress) {
+					IconButton(
+						onClick = {
+							vm.fetchWeather()
+						},
+						enabled = !weatherLoading && training.locationLat != null,
+						modifier = Modifier.padding(end = 16.dp),
+					) {
+						Iconics(CommunityMaterial.Icon3.cmd_weather_partly_cloudy)
+					}
 					IconButton(
 						onClick = {
 							trainingCommentDialogItem = TrainingComment(trainingId = training.id, comment = "")
@@ -182,6 +192,7 @@ fun TrainingScreen(
 					) {
 						Iconics(CommunityMaterial.Icon.cmd_comment_text_outline)
 					}
+				}
 			}
 		}
 

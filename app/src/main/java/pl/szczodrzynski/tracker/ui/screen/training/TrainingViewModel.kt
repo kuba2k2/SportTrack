@@ -16,7 +16,9 @@ import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
+import pl.szczodrzynski.tracker.data.entity.TrainingWeather
 import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
+import pl.szczodrzynski.tracker.data.network.openmeteo.WeatherService
 import pl.szczodrzynski.tracker.manager.TrackerManager
 import pl.szczodrzynski.tracker.service.data.TrackerCommand
 import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataManager
@@ -28,6 +30,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TrainingViewModel @Inject constructor(
 	val manager: TrackerManager,
+	private val weatherService: WeatherService,
 	private val appDb: AppDb,
 ) : ViewModel() {
 
@@ -39,6 +42,9 @@ class TrainingViewModel @Inject constructor(
 
 	private val _state = MutableStateFlow<State>(State.Loading)
 	val state = _state.asStateFlow()
+
+	private val _weatherLoading = MutableStateFlow(false)
+	val weatherLoading = _weatherLoading.asStateFlow()
 
 	private lateinit var training: TrainingFull
 	private val metadataManager = TrainingMetadataManager()
@@ -153,5 +159,35 @@ class TrainingViewModel @Inject constructor(
 
 	fun saveRun(run: TrainingRun) = viewModelScope.launch {
 		appDb.trainingRunDao.update(run)
+	}
+
+	fun fetchWeather() = viewModelScope.launch {
+		val locationLat = training.training.locationLat ?: return@launch
+		val locationLon = training.training.locationLon ?: return@launch
+
+		_weatherLoading.update { true }
+		val weather = metadataManager.fetchCurrentWeather(weatherService, locationLat, locationLon) ?: run {
+			_weatherLoading.update { false }
+			return@launch
+		}
+
+		val newWeather = TrainingWeather(
+			trainingId = training.training.id,
+			// dateTime = Instant.ofEpochSecond(weather.current.time),
+			weather = weather.current.weatherCodeString(),
+			precipitation = if (weather.current.precipitation != 0.0f)
+				"${weather.current.precipitation.toInt()} ${weather.currentUnits.precipitation}"
+			else
+				null,
+			localTemperature = manager.trackerConfig.value.temperature,
+			temperature = weather.current.temperature2m,
+			apparentTemperature = weather.current.apparentTemperature,
+			humidity = weather.current.relativeHumidity2m,
+			windDirection = weather.current.windDirectionString(),
+			windSpeed = weather.current.windSpeed10m,
+			pressure = weather.current.pressureMsl.toInt(),
+		)
+		appDb.trainingWeatherDao.insert(newWeather)
+		_weatherLoading.update { false }
 	}
 }

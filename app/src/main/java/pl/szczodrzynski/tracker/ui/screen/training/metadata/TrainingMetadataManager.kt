@@ -16,6 +16,7 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import pl.szczodrzynski.tracker.data.network.openmeteo.WeatherService
 import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -119,5 +120,18 @@ class TrainingMetadataManager {
 		Timber.d("Addresses for location $latitude,$longitude: $addresses")
 
 		return@withContext addresses.firstOrNull()
+	}
+
+	suspend fun fetchCurrentWeather(
+		service: WeatherService,
+		latitude: Double,
+		longitude: Double,
+	) = withContext(Dispatchers.IO) {
+		try {
+			return@withContext service.getCurrentWeather(latitude, longitude)
+		} catch (e: Exception) {
+			Timber.e(e, "Weather request failed")
+			return@withContext null
+		}
 	}
 }

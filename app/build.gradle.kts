@@ -74,6 +74,8 @@ dependencies {
 	implementation(platform(libs.okhttp.bom))
 	implementation(libs.okhttp)
 	implementation(libs.okhttp.logging)
+	implementation(libs.retrofit)
+	implementation(libs.retrofit.converter.serialization)
 	implementation(libs.kotlin.serialization.json)
 	ksp(libs.androidx.room.compiler)
 	ksp(libs.hilt.android.compiler)

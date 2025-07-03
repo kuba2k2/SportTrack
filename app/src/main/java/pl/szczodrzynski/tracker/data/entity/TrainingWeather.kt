@@ -28,7 +28,7 @@ data class TrainingWeather(
 	val apparentTemperature: Float? = null,
 	val humidity: Int? = null,
 	val windDirection: String? = null,
-	val windSpeed: Int? = null,
+	val windSpeed: Float? = null,
 	val pressure: Int? = null,
 )
 

@@ -24,6 +24,7 @@ desugar = "2.1.5"
 mapCompose = "3.0.0"
 okHttpBom = "4.12.0"
 kotlinSerializationJson = "1.8.1"
+retrofit = "3.0.0"
 
 [libraries]
 android-tools-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
@@ -60,6 +61,8 @@ mapcompose = { group = "ovh.plrapps", name = "mapcompose", version.ref = "mapCom
 okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okHttpBom" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
 
 [plugins]
