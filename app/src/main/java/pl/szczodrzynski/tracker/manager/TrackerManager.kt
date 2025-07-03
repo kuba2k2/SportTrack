@@ -99,15 +99,20 @@ class TrackerManager @Inject constructor(
 		trainingRunTimeout?.cancel()
 
 		// insert the split if available already
-		val runId = trainingRun?.id
-		if (result.type == TrackerResult.Type.SPLIT && result.millis != null && runId != null) {
+		val trainingRunId = trainingRun?.id
+		if (result.millis != null && result.type != TrackerResult.Type.DELAY && trainingRunId != null) {
 			val split = TrainingRunSplit(
-				trainingRunId = runId,
+				trainingRunId = trainingRunId,
 				timestamp = result.millis,
+				type = when (result.type) {
+					TrackerResult.Type.REACTION_BTN -> TrainingRunSplit.Type.REACTION_BTN
+					TrackerResult.Type.REACTION_OPT -> TrainingRunSplit.Type.REACTION_OPT
+					else -> TrainingRunSplit.Type.SPLIT
+				},
 			)
 			Timber.d("Creating split: $split")
 			appDb.trainingRunSplitDao.insert(split)
-			trainingRunHasSplits = true
+			trainingRunHasSplits = trainingRunHasSplits || split.type == TrainingRunSplit.Type.SPLIT
 		}
 
 		// set a timeout if at least one split is already saved
@@ -115,13 +120,7 @@ class TrackerManager @Inject constructor(
 			trainingRunTimeout = launchTimeout()
 		}
 
-		_lastResult.update {
-			when (result.type) {
-				TrackerResult.Type.ON_YOUR_MARKS, TrackerResult.Type.READY, TrackerResult.Type.START -> result
-				TrackerResult.Type.DELAY -> lastResult.value?.copy(millis = result.millis)
-				TrackerResult.Type.SPLIT -> lastResult.value
-			}
-		}
+		_lastResult.update { result }
 	}
 
 	private fun launchTimeout() = launch(Dispatchers.IO) {

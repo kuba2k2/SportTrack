@@ -10,9 +10,12 @@ data class TrackerResult(
 	enum class Type(val char: Char, val hasParam: Boolean = false) {
 		ON_YOUR_MARKS('M'),
 		READY('R'),
-		START('G'),
+		START('S'),
+		ERROR('E'), // unused - reaction test only
 		DELAY('D', hasParam = true),
 		SPLIT('L', hasParam = true),
+		REACTION_BTN('B', hasParam = true),
+		REACTION_OPT('O', hasParam = true),
 	}
 
 	companion object {

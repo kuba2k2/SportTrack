@@ -27,7 +27,7 @@ import pl.szczodrzynski.tracker.data.entity.serializer.ListConverter
 		TrainingRunSplit::class,
 		TrainingWeather::class,
 	],
-	version = 1,
+	version = 2,
 )
 @TypeConverters(
 	InstantConverter::class,

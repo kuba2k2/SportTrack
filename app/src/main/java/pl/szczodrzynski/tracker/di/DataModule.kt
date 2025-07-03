@@ -2,6 +2,8 @@ package pl.szczodrzynski.tracker.di
 
 import android.app.Application
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,5 +21,11 @@ object DataModule {
 		context = app,
 		klass = AppDb::class.java,
 		name = "app.db",
-	).build()
+	).addMigrations(object : Migration(1, 2) {
+		override fun migrate(db: SupportSQLiteDatabase) {
+			db.execSQL(
+				"""ALTER TABLE trainingRunSplit ADD COLUMN type TEXT NOT NULL DEFAULT "SPLIT";"""
+			)
+		}
+	}).build()
 }

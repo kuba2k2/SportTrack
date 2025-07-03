@@ -16,4 +16,11 @@ data class TrainingRunSplit(
 	val trainingRunId: Int,
 
 	val timestamp: Int,
-)
+	val type: Type = Type.SPLIT,
+) {
+	enum class Type {
+		SPLIT,
+		REACTION_BTN,
+		REACTION_OPT,
+	}
+}
