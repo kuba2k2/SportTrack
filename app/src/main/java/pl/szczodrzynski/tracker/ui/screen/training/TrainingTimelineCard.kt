@@ -94,6 +94,7 @@ fun TrainingTimelineCard(
 			when (item) {
 				is TrainingRunFull -> TrainingRunCard(item)
 				is TrainingComment -> TrainingCommentCard(item)
+				is TrainingWeather -> TrainingWeatherCard(item)
 			}
 		}
 	}
@@ -178,5 +179,71 @@ private fun TrainingCommentCard(
 			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
 		)
+	}
+}
+
+@Composable
+private fun TrainingWeatherCard(
+	trainingWeather: TrainingWeather,
+) {
+	val localDateTime = trainingWeather.dateTime.atZone(ZoneId.systemDefault())
+
+	Row(verticalAlignment = Alignment.CenterVertically) {
+		Iconics(CommunityMaterial.Icon3.cmd_weather_partly_cloudy, size = 16.dp)
+		Text(
+			listOfNotNull(
+				trainingWeather.weather,
+				trainingWeather.temperature?.let { stringResource(R.string.weather_temperature_format, it) },
+				trainingWeather.apparentTemperature?.let {
+					stringResource(
+						R.string.weather_temperature_apparent_format,
+						it
+					)
+				},
+			).joinToString(),
+			modifier = Modifier
+				.padding(start = 4.dp)
+				.weight(1.0f),
+			color = MaterialTheme.colorScheme.onSurfaceVariant,
+		)
+		Text(
+			localDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+			color = MaterialTheme.colorScheme.onSurfaceVariant,
+		)
+	}
+
+	Row(verticalAlignment = Alignment.CenterVertically) {
+		if (trainingWeather.windSpeed != null) {
+			Iconics(CommunityMaterial.Icon3.cmd_weather_windy, size = 16.dp)
+			Text(
+				"${trainingWeather.windSpeed} km/h ${trainingWeather.windDirection}",
+				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+		if (trainingWeather.humidity != null) {
+			Iconics(CommunityMaterial.Icon.cmd_cloud_percent_outline, size = 16.dp)
+			Text(
+				"${trainingWeather.humidity}%",
+				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+		if (trainingWeather.precipitation != null) {
+			Iconics(CommunityMaterial.Icon3.cmd_weather_pouring, size = 16.dp)
+			Text(
+				trainingWeather.precipitation,
+				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+		if (trainingWeather.pressure != null) {
+			Iconics(CommunityMaterial.Icon.cmd_arrow_collapse, size = 16.dp)
+			Text(
+				"${trainingWeather.pressure} hPa",
+				modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
 	}
 }

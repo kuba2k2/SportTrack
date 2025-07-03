@@ -96,4 +96,6 @@
 	<string name="login_sync_error">Błąd synchronizacji</string>
 	<string name="login_sync_upload_button">Prześlij</string>
 	<string name="login_sync_download_button">Pobierz</string>
+	<string name="weather_temperature_format">%.1f°C</string>
+	<string name="weather_temperature_apparent_format">odczuw.: %.1f°C</string>
 </resources>
