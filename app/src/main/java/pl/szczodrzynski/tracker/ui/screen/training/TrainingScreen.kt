@@ -15,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,12 +35,16 @@ import pl.szczodrzynski.tracker.data.entity.joins.TrainingRunFull
 import pl.szczodrzynski.tracker.service.data.ConnectionState
 import pl.szczodrzynski.tracker.ui.NavTarget
 import pl.szczodrzynski.tracker.ui.components.EditTextDialog
+import pl.szczodrzynski.tracker.ui.components.FullscreenLoadingIndicator
 import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
 import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingController
 import pl.szczodrzynski.tracker.ui.screen.training.components.TrainingMap
 import pl.szczodrzynski.tracker.ui.screen.training.metadata.TrainingMetadataUpdater
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Preview
 @Composable
@@ -53,6 +58,7 @@ private fun Preview() {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun TrainingScreen(
 	trainingId: Int? = null,
+	forceNew: Boolean = false,
 	vm: TrainingViewModel = hiltViewModel(),
 ) {
 	val mainVm = LocalMainViewModel.current
@@ -61,9 +67,22 @@ fun TrainingScreen(
 	val trackerConfig by vm.manager.trackerConfig.collectAsStateWithLifecycle()
 	val weatherLoading by vm.weatherLoading.collectAsStateWithLifecycle()
 
+	val time = LocalTime.now()
+	val defaultTitle = stringResource(
+		R.string.training_default_title,
+		time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+	)
+	LaunchedEffect(trainingId, forceNew) {
+		vm.loadTraining(
+			defaultTitle = defaultTitle,
+			trainingId = trainingId,
+			forceNew = forceNew,
+		)
+	}
+
 	val trainingFull = when (val localState = state) {
 		is TrainingViewModel.State.Loading -> {
-			TrainingLoading(vm, trainingId)
+			FullscreenLoadingIndicator()
 			return
 		}
 

@@ -15,7 +15,7 @@ import pl.szczodrzynski.tracker.data.entity.joins.TrainingFull
 interface TrainingDao {
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
-	suspend fun insert(training: Training)
+	suspend fun insert(training: Training): Long
 
 	@Update
 	suspend fun update(training: Training)

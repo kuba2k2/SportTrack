@@ -28,7 +28,7 @@ sealed class NavTarget(
 		NavTarget(R.string.home_title, CommunityMaterial.Icon.cmd_connection, inNavBar = true)
 
 	@Serializable
-	data object Training :
+	data class Training(val forceNew: Boolean) :
 		NavTarget(R.string.training_title, CommunityMaterial.Icon3.cmd_run, inNavBar = true)
 
 	@Serializable

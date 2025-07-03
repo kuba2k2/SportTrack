@@ -61,7 +61,7 @@ private fun Preview() {
 
 private val navigationBarItems: List<NavTarget> = listOf(
 	NavTarget.Home,
-	NavTarget.Training,
+	NavTarget.Training(forceNew = false),
 	NavTarget.History(trainingId = null),
 	NavTarget.Profile,
 )
@@ -175,7 +175,7 @@ fun MainScaffold() {
 						icon = {
 							Iconics(target.icon)
 						},
-						enabled = target != NavTarget.Training || training != null,
+						enabled = target !is NavTarget.Training || training != null,
 						label = {
 							Text(stringResource(target.titleRes))
 						},
@@ -212,8 +212,8 @@ fun MainScaffold() {
 				HomeScreen()
 			}
 
-			composable<NavTarget.Training> {
-				TrainingScreen()
+			composable<NavTarget.Training>(typeMap = navTypeMap) {
+				TrainingScreen(forceNew = (navTarget as? NavTarget.Training)?.forceNew ?: false)
 			}
 
 			composable<NavTarget.History>(typeMap = navTypeMap) {

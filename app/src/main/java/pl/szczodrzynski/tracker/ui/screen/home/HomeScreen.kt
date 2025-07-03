@@ -44,9 +44,6 @@ import pl.szczodrzynski.tracker.ui.components.Iconics
 import pl.szczodrzynski.tracker.ui.components.SensorErrorSnackbar
 import pl.szczodrzynski.tracker.ui.main.LocalMainViewModel
 import pl.szczodrzynski.tracker.ui.main.SportTrackPreview
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 @Preview
 @Composable
@@ -135,11 +132,6 @@ fun HomeScreen(
 		if (version == null || temperature == null)
 			return@Column
 
-		val time = LocalTime.now()
-		val defaultTitle = stringResource(
-			R.string.training_default_title,
-			time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-		)
 		Text(
 			training?.title
 				?: stringResource(R.string.home_training_new_title),
@@ -151,9 +143,7 @@ fun HomeScreen(
 		val size = ButtonDefaults.LargeContainerHeight
 		Button(
 			onClick = {
-				if (training == null)
-					vm.createTraining(defaultTitle)
-				mainVm.navigate(NavTarget.Training)
+				mainVm.navigate(NavTarget.Training(forceNew = false))
 			},
 			shapes = ButtonDefaults.shapesFor(size),
 			modifier = Modifier
@@ -179,8 +169,7 @@ fun HomeScreen(
 		TextButton(
 			modifier = Modifier.padding(top = 8.dp),
 			onClick = {
-				vm.createTraining(defaultTitle)
-				mainVm.navigate(NavTarget.Training)
+				mainVm.navigate(NavTarget.Training(forceNew = true))
 			},
 			shapes = ButtonDefaults.shapes(),
 		) {

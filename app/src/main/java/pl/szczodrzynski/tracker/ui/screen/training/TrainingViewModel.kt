@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pl.szczodrzynski.tracker.R
 import pl.szczodrzynski.tracker.data.db.AppDb
+import pl.szczodrzynski.tracker.data.entity.Training
 import pl.szczodrzynski.tracker.data.entity.TrainingComment
 import pl.szczodrzynski.tracker.data.entity.TrainingRun
 import pl.szczodrzynski.tracker.data.entity.TrainingWeather
@@ -46,20 +47,46 @@ class TrainingViewModel @Inject constructor(
 	private val _weatherLoading = MutableStateFlow(false)
 	val weatherLoading = _weatherLoading.asStateFlow()
 
-	private lateinit var training: TrainingFull
+	private lateinit var training: Training
 	private val metadataManager = TrainingMetadataManager()
 
-	fun loadTraining(id: Int, isHistory: Boolean) = viewModelScope.launch {
+	/**
+	 * @param trainingId if null -> fetch current or create new; otherwise -> use finished training
+	 * @param forceNew force creating new training; effective only if [trainingId] == null
+	 */
+	fun loadTraining(
+		defaultTitle: String,
+		trainingId: Int?,
+		forceNew: Boolean,
+	) = viewModelScope.launch {
 		if (state.value !is State.Loading)
 			return@launch
 		_state.update { State.Loading }
-		appDb.trainingDao.getOneFull(id).collect { training ->
-			training ?: return@collect
-			this@TrainingViewModel.training = training
-			if (!isHistory && training.training.id == manager.training.value?.id)
-				_state.update { State.InProgress(training) }
+
+		val isHistory = trainingId != null
+		val currentTraining = manager.training.value
+
+		val displayTrainingId = when {
+			trainingId != null -> trainingId
+
+			forceNew || currentTraining == null -> {
+				manager.sendCommand(TrackerCommand.reset())
+				val training = Training(
+					title = defaultTitle,
+				)
+				appDb.trainingDao.insert(training).toInt()
+			}
+
+			else -> currentTraining.id
+		}
+
+		appDb.trainingDao.getOneFull(displayTrainingId).collect { trainingFull ->
+			trainingFull ?: return@collect
+			training = trainingFull.training
+			if (!isHistory)
+				_state.update { State.InProgress(trainingFull) }
 			else
-				_state.update { State.Finished(training) }
+				_state.update { State.Finished(trainingFull) }
 		}
 	}
 
@@ -69,8 +96,8 @@ class TrainingViewModel @Inject constructor(
 		onLocationDisabled: (e: ResolvableApiException) -> Unit,
 		onProgress: (inProgress: Boolean) -> Unit,
 	) = viewModelScope.launch {
-		var locationLat = training.training.locationLat
-		var locationLon = training.training.locationLon
+		var locationLat = training.locationLat
+		var locationLon = training.locationLon
 
 		// if location is not saved, fetch it and return if not possible
 		if (locationLat == null || locationLon == null) {
@@ -98,7 +125,7 @@ class TrainingViewModel @Inject constructor(
 
 		// if location name is not saved, run the Geocoder
 		var locality: String? = null
-		val locationName = training.training.locationName ?: run {
+		val locationName = training.locationName ?: run {
 			onProgress(true)
 			try {
 				val address = metadataManager.fetchLocationAddress(context, locationLat, locationLon)
@@ -114,16 +141,16 @@ class TrainingViewModel @Inject constructor(
 		}
 
 		// update the title if it's still the default
-		val time = training.training.dateTime.atZone(ZoneId.systemDefault())
+		val time = training.dateTime.atZone(ZoneId.systemDefault())
 			.toLocalTime()
 			.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
 		val defaultTitle = context.getString(R.string.training_default_title, time)
-		val title = if (training.training.title != defaultTitle || locality == null)
-			training.training.title
+		val title = if (training.title != defaultTitle || locality == null)
+			training.title
 		else
 			context.getString(R.string.training_located_title, locality)
 
-		val newTraining = training.training.copy(
+		val newTraining = training.copy(
 			title = title,
 			locationName = locationName,
 			locationLat = locationLat,
@@ -131,7 +158,7 @@ class TrainingViewModel @Inject constructor(
 		)
 
 		// save training if changed
-		if (newTraining != training.training) {
+		if (newTraining != training) {
 			withContext(Dispatchers.IO) {
 				appDb.trainingDao.update(newTraining)
 			}
@@ -145,7 +172,7 @@ class TrainingViewModel @Inject constructor(
 	}
 
 	fun saveTitle(value: String) = viewModelScope.launch {
-		val newTraining = training.training.copy(title = value)
+		val newTraining = training.copy(title = value)
 		appDb.trainingDao.update(newTraining)
 	}
 
@@ -162,8 +189,8 @@ class TrainingViewModel @Inject constructor(
 	}
 
 	fun fetchWeather() = viewModelScope.launch {
-		val locationLat = training.training.locationLat ?: return@launch
-		val locationLon = training.training.locationLon ?: return@launch
+		val locationLat = training.locationLat ?: return@launch
+		val locationLon = training.locationLon ?: return@launch
 
 		_weatherLoading.update { true }
 		val weather = metadataManager.fetchCurrentWeather(weatherService, locationLat, locationLon) ?: run {
@@ -172,7 +199,7 @@ class TrainingViewModel @Inject constructor(
 		}
 
 		val newWeather = TrainingWeather(
-			trainingId = training.training.id,
+			trainingId = training.id,
 			// dateTime = Instant.ofEpochSecond(weather.current.time),
 			weather = weather.current.weatherCodeString(),
 			precipitation = if (weather.current.precipitation != 0.0f)

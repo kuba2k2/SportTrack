@@ -336,3 +336,5 @@ obj/
 
 # End of https://www.toptal.com/developers/gitignore/api/android,androidstudio,java,kotlin,gradle,intellij+all,visualstudiocode,git
 
+app/release/
+app/debug/
